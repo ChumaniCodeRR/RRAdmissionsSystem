@@ -1,0 +1,569 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using RhodesWizard;
+using Utilities;
+using NS_System.StrongTypesNS;
+using Admissions.Utilities;
+using NS_StuReg.StrongTypesNS;
+using NS_Admissions.StrongTypesNS;
+using NS_Dept.StrongTypesNS;
+using NS_Honours.StrongTypesNS;
+using Admissions.UtilityScreens;
+
+namespace Admissions.AdmissionForms
+{
+    public partial class PostgradDegreeDetails : UserControl, IWizard
+    {
+        DS_ADM_STUDataSet ds_adm_stu;
+        bool isUpdateDegree, progressUpdate, read_only;
+
+        #region Constructors
+
+        public PostgradDegreeDetails()
+        {
+            InitializeComponent();
+            this.dgvDegreeChoice.AutoGenerateColumns = false;
+            read_only = false;
+        }
+
+        public PostgradDegreeDetails(bool progressUpdate, bool read_only)
+            : this()
+        {
+            this.progressUpdate = progressUpdate;
+            this.read_only = read_only;
+            /*this.read_only = false;*/
+
+            if (read_only == true)
+            {
+                gbRegistrationDetails.Enabled = btnNew.Enabled = btnDelete.Enabled = false;
+
+            }
+
+            ckDegree.Visible /*= cDegStatus.Visible*/ = true;
+        }
+
+        #endregion
+
+        #region IWizard Members
+
+        public bool ShowView()
+        {
+            try
+            {
+                //TODO: Check if one of the choices have been offered, and enable/disable add/update
+                EnableNonEditState();
+                PopulateComboBoxes();
+                PopulateStudentDetails();
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+            return true;
+        }
+
+        public bool Next()
+        {
+            try
+            {
+                if (progressUpdate && !IsProgressUpdateDegreeSelected())
+                {
+                    string message = "You have to select a default degree to update progress for.";
+                    MessageBox.Show(message, "Admissions", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+
+                bool currentstudent = false;
+                int app_type = (int)WizardEnvironment.State[AdmissionStateItems.ApplicationType];
+                bool tempsession = (bool)WizardEnvironment.State[AdmissionStateItems.ApplicationSession];
+                if (!read_only)
+                {
+                    
+                    string temperror = Proxy.Admissions.Save_Degree_Choice(app_type, tempsession, out currentstudent, ref ds_adm_stu);
+                    if (!string.IsNullOrEmpty(temperror))
+                    {
+                        MessageBox.Show(temperror, "Admissions", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return false;
+                    }
+                }
+                WizardEnvironment.State[AdmissionStateItems.AdmissionStudent] = ds_adm_stu;
+                WizardEnvironment.State[AdmissionStateItems.CurrentStudent] = currentstudent;
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+            return true;
+        }
+
+        public void Back()
+        {
+            
+        }
+
+        #endregion
+
+        #region Local Methods
+        
+        void PopulateComboBoxes()
+        {
+            if (cbRegStatus.Items.Count.Equals(0))
+            {
+                ds_genDataSet ds_reg_status = Proxy.System.Get_Gen("TRUE", "RS");
+                cbRegStatus.DataSource = ds_reg_status.TT_GEN;
+            }
+
+            DataGridViewComboBoxColumn cDeg = (DataGridViewComboBoxColumn)dgvDegreeChoice.Columns[cDegreeName.Name];
+            if (cbDegreeName.Items.Count.Equals(0) || cDeg.Items.Count.Equals(0))
+            {
+                ds_degreeDataSet ds_degrees = Proxy.StudentRegistration.get_hon_adm_degrees(DateTime.Today.Year);
+
+                ds_degreeDataSet ds_degr1 = (ds_degreeDataSet)ds_degrees.Copy();
+                ds_degreeDataSet.tt_degreeRow deg1Default = ds_degr1.tt_degree.Newtt_degreeRow();
+                ds_degr1.tt_degree.Addtt_degreeRow("0", "[Please Select]", "[Please Select]");
+                DataView dvDegree1 = new DataView(ds_degr1.tt_degree);
+                dvDegree1.Sort = "descrip";
+                cbDegreeName.DataSource = dvDegree1;
+
+                cDeg.ValueMember = "DEGR";
+                cDeg.DisplayMember = "DESCRIP";
+                ds_degreeDataSet ds_degr2 = (ds_degreeDataSet)ds_degrees.Copy();
+                ds_degreeDataSet.tt_degreeRow deg2Default = ds_degr2.tt_degree.Newtt_degreeRow();
+                ds_degr2.tt_degree.Addtt_degreeRow("0", "[Please Select]", "[Please Select]");
+                DataView dvDegree2 = new DataView(ds_degr2.tt_degree);
+                dvDegree2.Sort = "descrip";
+                cDeg.DataSource = dvDegree2;
+            }
+
+            if (cbDepartment1.Items.Count.Equals(0) || cbDepartment2.Items.Count.Equals(0))
+            {
+                ds_controlDataSet ds_dept1 = (ds_controlDataSet)Global.Global.ds_control.Copy();
+                ds_dept1.tt_dept.Addtt_deptRow("-1", "[Please Select] ", string.Empty, string.Empty);
+                DataView dvDepartment1 = new DataView(ds_dept1.tt_dept);
+                dvDepartment1.Sort = "descrip";
+                cbDepartment1.DataSource = dvDepartment1;
+
+                ds_controlDataSet ds_dept2 = (ds_controlDataSet)Global.Global.ds_control.Copy();
+                ds_dept2.tt_dept.Addtt_deptRow("-1", "[Please Select] ", string.Empty, string.Empty);
+                DataView dvDepartment2 = new DataView(ds_dept2.tt_dept);
+                dvDepartment2.Sort = "descrip";
+                cbDepartment2.DataSource = dvDepartment2;
+            }
+
+            if(cbPGChoice.Items.Count.Equals(0))
+            {
+                DS_PG_COURSEDataSet ds_pg_courses = Proxy.Admissions.Get_PG_Courses();
+                DS_PG_COURSEDataSet.TT_PG_COURSERow course = ds_pg_courses.TT_PG_COURSE.NewTT_PG_COURSERow();
+                course.CRSE_CODE = "-1";
+                course.PG_CHOICE = "[Please Select]";
+                ds_pg_courses.TT_PG_COURSE.Rows.InsertAt(course, 0);
+                cbPGChoice.DataSource = ds_pg_courses.TT_PG_COURSE;
+            }
+
+            if (cbAcademicStatus.Items.Count.Equals(0))
+            {
+                List<BooleanStringBinding> status = new List<BooleanStringBinding>();
+                status.Add(new BooleanStringBinding(true, "Undergraduate"));
+                status.Add(new BooleanStringBinding(false, "Postgraduate"));
+                cbAcademicStatus.DataSource = status;
+            }
+
+            if (cbEntryStatus.Items.Count.Equals(0))
+            {
+                ds_genDataSet ds_entry_level = Proxy.System.Get_Gen("TRUE", "ES");
+                cbEntryStatus.DataSource = ds_entry_level.TT_GEN;
+            }
+        }
+
+        void PopulateStudentDetails()
+        {
+            if (WizardEnvironment.State.ContainsKey(AdmissionStateItems.AdmissionStudent) && WizardEnvironment.State[AdmissionStateItems.AdmissionStudent] != null)
+            {
+                ds_adm_stu = (DS_ADM_STUDataSet)WizardEnvironment.State[AdmissionStateItems.AdmissionStudent];
+            }
+            else
+            {
+                ds_adm_stu = new DS_ADM_STUDataSet();
+            }
+            bsAdmStudent.DataSource = ds_adm_stu.TT_ADM_STU;
+            bsAdmissions.DataSource = ds_adm_stu.TT_ADM;
+            dgvDegreeChoice.DataSource = ds_adm_stu.TT_PGCHOICE;
+
+            //if (progressUpdate) LoadProgressUpdateDegree();
+        }
+
+        void EnableNonEditState()
+        {
+            scDegreeChoice.Panel2Collapsed = true;
+            scDegreeChoice.Panel1.Enabled = true;
+
+            if (cbDegreeName.Items.Count > 0) cbDegreeName.SelectedIndex = 0;
+            if (cbDepartment1.Items.Count > 0) cbDepartment1.SelectedIndex = 0;
+            if (cbDepartment2.Items.Count > 0) cbDepartment2.SelectedIndex = 0;
+            if (cbPGChoice.Items.Count > 0) cbPGChoice.SelectedIndex = 0;
+
+            cbDegreeName.Enabled = txtDegree.Enabled = true;
+            isUpdateDegree = false;
+        }
+
+        void EnableEditState()
+        {
+            scDegreeChoice.Panel2Collapsed = false;
+            scDegreeChoice.Panel1.Enabled = false;
+        }
+
+        //void LoadProgressUpdateDegree()
+        //{
+        //    if (WizardEnvironment.State.ContainsKey(AdmissionStateItems.ProgressDegree) && WizardEnvironment.State[AdmissionStateItems.ProgressDegree] != null)
+        //    {
+        //        foreach (DataGridViewRow item in dgvDegreeChoice.Rows)
+        //        {
+        //            if (item.Cells[cDegree.Name].Value.ToString().Equals(WizardEnvironment.State[AdmissionStateItems.ProgressDegree].ToString()))
+        //            { item.Cells[ckDegree.Name].Value = true; break; }
+        //        }
+        //    }
+        //}
+
+        bool IsProgressUpdateDegreeSelected()
+        {
+            bool selected = false;
+            foreach (DataGridViewRow item in dgvDegreeChoice.Rows)
+            {
+                DataGridViewCheckBoxCell cell = (DataGridViewCheckBoxCell)item.Cells[ckDegree.Name];
+                if (cell.Value != null && (bool)cell.Value)
+                {
+                    //WizardEnvironment.State[AdmissionStateItems.DefaultProgressDegree] = item.Cells[cDegree.Name].Value.ToString();
+                    WizardEnvironment.State[AdmissionStateItems.DefaultDegreeChoice] = item.Cells[cDEGR_NO.Name].Value.ToString();
+                    selected = true; break;
+                }
+            }
+            return selected;
+        }
+
+        bool IsValidDegreeSelection()
+        {
+            bool valid = true;
+            string feedback = "";
+            string ref_no = ds_adm_stu.TT_ADM_STU[0].REF_NO.ToString();
+            string stuno = ds_adm_stu.TT_ADM_STU[0].STUNO.ToString();
+
+
+
+            if (ref_no.Equals(""))
+            {
+                ref_no = Proxy.Admissions.get_online_reference_number(stuno);
+            }
+
+            if (cbDegreeName.SelectedValue == null || cbDegreeName.SelectedIndex == 0)
+            {
+                valid = false;
+                errorProvider.SetError(cbDegreeName, "You have to select a degree from the list.");
+            }
+
+            if (cbDepartment1.SelectedValue == null || cbDepartment1.SelectedIndex == 0)
+            {
+                valid = false;
+                errorProvider.SetError(cbDepartment1, "You have to select department from the list.");
+            }
+
+            if (cbPGChoice.SelectedValue == null || cbPGChoice.SelectedIndex == 0)
+            {
+                valid = false;
+                errorProvider.SetError(cbPGChoice, "You have to select choice from the list.");
+            }
+
+           /* if (cbDepartment2.SelectedValue == null || cbDepartment2.SelectedIndex == 0)
+            {
+                valid = false;
+                errorProvider.SetError(cbDepartment2, "You have to select department from the list.");
+            }*/
+
+            if ((cbDepartment1.SelectedValue != null || cbDepartment1.SelectedIndex > 0))
+            {
+                feedback = Proxy.Admissions.Is_Department_Online_Only(cbDepartment1.SelectedValue.ToString(), txtDegree.Text, ref_no);
+                    if (!(feedback.Equals("")))
+                    {
+                        valid = false;
+                        errorProvider.SetError(cbDepartment1, feedback);
+                    }
+            }
+
+            if ((cbDepartment2.SelectedValue != null || cbDepartment2.SelectedIndex > 0))
+            {
+                feedback = Proxy.Admissions.Is_Department_Online_Only(cbDepartment2.SelectedValue.ToString(), txtDegree.Text, ref_no);
+                    if (!(feedback.Equals("")))
+                    {
+                        valid = false;
+                        errorProvider.SetError(cbDepartment2, feedback);
+                    }
+            }
+
+            return valid;
+        }
+
+        #endregion
+
+        #region Button Events
+
+        private void btnEntryInfo_Click(object sender, EventArgs e)
+        {
+            EntryStatusDescriptions entryStatus = new EntryStatusDescriptions();
+            entryStatus.ShowDialog();
+        }
+
+        private void btnNew_Click(object sender, EventArgs e)
+        {
+            EnableEditState();
+        }
+
+        private void btnDelete_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string msg = string.Empty;
+
+                if (dgvDegreeChoice.SelectedRows.Count.Equals(0))
+                {
+                    msg = "There is no selected degree choice to remove.";
+                    MessageBox.Show(msg, "Admissions", MessageBoxButtons.OK, MessageBoxIcon.Warning); return;
+                }
+
+                msg = "Are you sure you want to delete the selected degree choice?";
+                if (!MessageBox.Show(msg, "Admissions", MessageBoxButtons.YesNo, MessageBoxIcon.Question).Equals(DialogResult.Yes)) return;
+
+                for (int i = 0; i < ds_adm_stu.TT_PGCHOICE.Rows.Count; i++)
+                {
+                    DS_ADM_STUDataSet.TT_PGCHOICERow choice = ds_adm_stu.TT_PGCHOICE[i];
+                    if (choice.PG_DEGR.Equals(dgvDegreeChoice.SelectedRows[0].Cells[cDegree.Name].Value.ToString()) &&
+                        choice.PG_DEPT1.Equals(dgvDegreeChoice.SelectedRows[0].Cells[cDept1.Name].Value.ToString()) &&
+                        choice.PG_CHOICE.Equals(dgvDegreeChoice.SelectedRows[0].Cells[cPGChoice.Name].Value.ToString()))
+                    {
+                        ds_adm_stu.TT_PGCHOICE.RemoveTT_PGCHOICERow(choice); i--;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+        }
+
+        private void btnAdd_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!IsValidDegreeSelection()) return;
+
+                if (!isUpdateDegree)
+                {
+                    DS_ADM_STUDataSet.TT_PGCHOICERow pg_choice = ds_adm_stu.TT_PGCHOICE.NewTT_PGCHOICERow();
+                    UpdatePostgraduateDegreeSelection(pg_choice);
+                    ds_adm_stu.TT_PGCHOICE.AddTT_PGCHOICERow(pg_choice);
+                }
+                else
+                {
+                    DS_ADM_STUDataSet.TT_PGCHOICERow pg_choice = null;
+                    foreach (DS_ADM_STUDataSet.TT_PGCHOICERow item in ds_adm_stu.TT_PGCHOICE)
+                    {
+                        if (item.PG_DEGR.Equals(dgvDegreeChoice.SelectedRows[0].Cells[cDegree.Name].Value.ToString()) && item.DEGR_NO.Equals(Int32.Parse(dgvDegreeChoice.SelectedRows[0].Cells[cDEGR_NO.Name].Value.ToString())))
+                        {
+                            pg_choice = item; break;
+                        }
+                    }
+                    if (pg_choice == null) throw new InvalidOperationException();
+
+                    UpdatePostgraduateDegreeSelection(pg_choice);
+                }
+
+                EnableNonEditState();
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+        }
+
+        void UpdatePostgraduateDegreeSelection(DS_ADM_STUDataSet.TT_PGCHOICERow pg_choice)
+        {
+            pg_choice.STUNO = ds_adm_stu.TT_ADM_STU[0].STUNO;
+            pg_choice.PG_DEGR = cbDegreeName.SelectedValue.ToString();
+            if (cbDepartment1.SelectedIndex > 0) pg_choice.PG_DEPT1 = cbDepartment1.SelectedValue.ToString();
+            else pg_choice.PG_DEPT1 = string.Empty;
+            if (cbDepartment2.SelectedIndex > 0) pg_choice.PG_DEPT2 = cbDepartment2.SelectedValue.ToString();
+            else pg_choice.PG_DEPT2 = string.Empty;
+            if (cbPGChoice.SelectedIndex > 0) pg_choice.PG_CHOICE = cbPGChoice.SelectedValue.ToString();
+            else pg_choice.PG_CHOICE = string.Empty;
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            EnableNonEditState();
+        }
+
+        #endregion
+
+        #region TextBox Events
+
+        void txtPGChoice_Leave(object sender, System.EventArgs e)
+        {
+            try
+            {
+                if (txtPGChoice.Text.Trim().Equals(string.Empty)) cbPGChoice.SelectedIndex = 0;
+                else cbPGChoice.SelectedValue = txtPGChoice.Text.Trim();
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+        }
+
+        void txtDept1_Leave(object sender, System.EventArgs e)
+        {
+            try
+            {
+                if (txtDept1.Text.Trim().Equals(string.Empty)) cbDepartment1.SelectedIndex = 0;
+                else cbDepartment1.SelectedValue = txtDept1.Text.Trim();
+
+                if (cbDepartment1.SelectedIndex < 0 && cbDepartment1.Items.Count > 0) cbDepartment1.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+        }
+
+        void txtDept2_Leave(object sender, System.EventArgs e)
+        {
+            try
+            {
+                if (txtDept2.Text.Trim().Equals(string.Empty)) cbDepartment2.SelectedIndex = 0;
+                else cbDepartment2.SelectedValue = txtDept2.Text.Trim();
+                
+                if (cbDepartment2.SelectedIndex < 0 && cbDepartment2.Items.Count > 0) cbDepartment2.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+        }
+
+        void txtDegree_Leave(object sender, System.EventArgs e)
+        {
+            try
+            {
+                if (txtDegree.Text.Trim().Equals(string.Empty)) cbDegreeName.SelectedIndex = 0;
+                else cbDegreeName.SelectedValue = txtDegree.Text.Trim();
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+        }
+
+        #endregion
+
+        #region ComboBox Events
+
+        private void cbDegreeName_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            errorProvider.SetError(cbDegreeName, string.Empty);
+
+            if (cbDegreeName.SelectedIndex < 1) txtDegree.Text = string.Empty;
+            else txtDegree.Text = cbDegreeName.SelectedValue.ToString().ToUpper();
+        }
+
+        private void cbDepartment1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            errorProvider.SetError(cbDepartment1, string.Empty);
+
+            if (cbDepartment1.SelectedIndex < 1) txtDept1.Text = string.Empty;
+            else txtDept1.Text = cbDepartment1.SelectedValue.ToString().ToUpper();
+        }
+
+        private void cbDepartment2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cbDepartment2.SelectedIndex < 1) txtDept2.Text = string.Empty;
+            else txtDept2.Text = cbDepartment2.SelectedValue.ToString().ToUpper();
+        }
+
+        private void cbPGChoice_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            errorProvider.SetError(cbPGChoice, string.Empty);
+
+            if (cbPGChoice.SelectedIndex < 1) txtPGChoice.Text = string.Empty;
+            else txtPGChoice.Text = cbPGChoice.SelectedValue.ToString().ToUpper();
+        }
+
+        #endregion
+
+        #region DataGridView Events
+
+        void dgvDegreeChoice_CellDoubleClick(object sender, System.Windows.Forms.DataGridViewCellEventArgs e)
+        {
+            try
+            {
+                if (dgvDegreeChoice.SelectedRows.Count.Equals(0))
+                {
+                    string msg = "There is no selected degree selection to update.";
+                    MessageBox.Show(msg, "Admissions", MessageBoxButtons.OK, MessageBoxIcon.Warning); return;
+                }
+
+                if (!read_only)
+                {
+
+                    DS_ADM_STUDataSet.TT_PGCHOICERow degree = null;
+                    foreach (DS_ADM_STUDataSet.TT_PGCHOICERow item in ds_adm_stu.TT_PGCHOICE)
+                    {
+                        if (item.PG_DEGR.Equals(dgvDegreeChoice.SelectedRows[0].Cells[cDegree.Name].Value.ToString()) && item.PG_CHOICE.Equals(dgvDegreeChoice.SelectedRows[0].Cells[cPGChoice.Name].Value.ToString()))
+                        {
+                            degree = item; break; 
+                        }
+                    }
+                    if (degree == null) throw new InvalidOperationException();
+
+                    cbDegreeName.SelectedValue = degree.PG_DEGR;
+                    cbDepartment1.SelectedValue = degree.PG_DEPT1;
+                    cbDepartment2.SelectedValue = degree.PG_DEPT2;
+                    cbPGChoice.SelectedValue = degree.PG_CHOICE;
+                    txt_pg_choice_descrip.Text = degree.PG_OTHER_SUBJ;
+
+                    if (degree.PG_DEGR == "LLB") cbDegreeName.Enabled = txtDegree.Enabled = true;
+                    else cbDegreeName.Enabled = txtDegree.Enabled = false;
+                    isUpdateDegree = true;
+
+                    EnableEditState();
+
+                    if (txtPGChoice.Text != string.Empty) lbl_pg_choice_descrip.Visible = txt_pg_choice_descrip.Visible = false;
+                    else lbl_pg_choice_descrip.Visible = txt_pg_choice_descrip.Visible = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+        }
+
+        void dgvDegreeChoice_DataBindingComplete(object sender, System.Windows.Forms.DataGridViewBindingCompleteEventArgs e)
+        {
+            dgvDegreeChoice.ClearSelection();
+        }
+
+        void dgvDegreeChoice_CurrentCellDirtyStateChanged(object sender, System.EventArgs e)
+        {
+            if (dgvDegreeChoice.CurrentCell.GetType().Equals(typeof(DataGridViewCheckBoxCell)) && dgvDegreeChoice.IsCurrentCellDirty)
+            {
+                dgvDegreeChoice.CommitEdit(DataGridViewDataErrorContexts.Commit);
+            }
+        }
+
+        #endregion
+
+       
+    }
+}

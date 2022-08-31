@@ -1,0 +1,888 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using RhodesWizard;
+using Admissions.AdmissionForms;
+using Admissions.EventArguments;
+
+namespace Admissions.Utilities
+{
+    public static class AdmissionWizardViewBuilder
+    {
+        public static event EventHandler<AdmissionStudentEventArgs> AdmissionStudentLoaded;
+
+        #region Undergraduate App Wizard
+
+        public static List<WizardView> GetUndergraduateCaptureFormWizard(int yearchoice, string oldstuno, string Ref_no)
+        {
+            List<WizardView> views = new List<WizardView>();
+                        
+            IWizard ugAdmissionChecks = new UGAdmissionCheck(yearchoice, oldstuno, Ref_no);
+            WizardView wvUGChecks = new WizardView("UGChecks", ugAdmissionChecks, 1);
+            (ugAdmissionChecks as UGAdmissionCheck).AdmissionStudentValidated += new EventHandler<AdmissionStudentEventArgs>(LoadAdmissionStudent);
+            views.Add(wvUGChecks);            
+
+            IWizard stuPersonalDetails = new StudentPersonalDetails(Ref_no);
+            WizardView wvStuPersDetails = new WizardView("StuPersDetails", stuPersonalDetails, 2);
+            wvStuPersDetails.AllowBack = false;
+            (stuPersonalDetails as StudentPersonalDetails).AdmissionStudentCreated += new EventHandler<AdmissionStudentEventArgs>(LoadAdmissionStudent);
+            views.Add(wvStuPersDetails);
+
+            IWizard stuDegree = new StudentDegreeDetails();
+            WizardView wvStuDegree = new WizardView("StuDegreeDetails", stuDegree, 3);
+            views.Add(wvStuDegree);
+
+            IWizard prevStudies = new PreviousStudies();
+            WizardView wvPrevStudies = new WizardView("PreviousStudies", prevStudies, 4);
+            views.Add(wvPrevStudies);
+
+            IWizard stuAddressDetails = new StudentAddressDetails();
+            WizardView wvStuAddressDetails = new WizardView("StudentAddressDetails", stuAddressDetails, 5);
+            views.Add(wvStuAddressDetails);
+
+            IWizard guardAddressDetails = new AdmissionGuardianAddressDetails();
+            WizardView wvGuardAddressDetails = new WizardView("GuardianAddressDetails", guardAddressDetails, 6);
+            views.Add(wvGuardAddressDetails);
+
+            IWizard schoolDetails = new SchoolDetails();
+            WizardView wvSchoolDetails = new WizardView("SchoolDetails", schoolDetails, 7);
+            views.Add(wvSchoolDetails);
+
+            IWizard matricResults = new AdmissionMatricResults(false);
+            WizardView wvMatricResults = new WizardView("MatricResults", matricResults, 8);
+            views.Add(wvMatricResults);
+
+            //IWizard schoolPrincipal = new AdmissionSchoolPrincipal();
+            //WizardView wvSchoolPrincipal = new WizardView("SchoolPrincipal", schoolPrincipal, 9);
+            //views.Add(wvSchoolPrincipal);
+
+            //IWizard finAid = new FinancialAid();
+            //WizardView wvFinAid = new WizardView("FinAid", finAid, 10);
+            //views.Add(wvFinAid);
+
+            IWizard rhodesFamily = new FamilyAtRhodes();
+            WizardView wvRhodesFamily = new WizardView("RhodesFamily", rhodesFamily, 11);
+            views.Add(wvRhodesFamily);
+
+            IWizard residenceDetails = new ResidenceDetails();
+            WizardView wvResidenceDetails = new WizardView("ResidenceDetails", residenceDetails, 12);
+            views.Add(wvResidenceDetails);
+
+            IWizard accountPayer = new AccountPayer();
+            WizardView wvAccountPayer = new WizardView("AccountPayer", accountPayer, 13);
+            views.Add(wvAccountPayer);
+
+            IWizard schoolHistory = new SchoolHistory();
+            WizardView wvSchoolHistory = new WizardView("SchoolHistory", schoolHistory, 14);
+            views.Add(wvSchoolHistory);
+
+            IWizard additionalInfo = new AdditionalInfo();
+            WizardView wvAdditionalInfo = new WizardView("AdditionalInfo", additionalInfo, 15);
+            views.Add(wvAdditionalInfo);
+
+            //Some BSC Subject choice goes here
+
+            IWizard attentionIndicators = new AttentionIndicators();
+            WizardView wvAttentionIndicators = new WizardView("AttentionIndicators", attentionIndicators, 17);
+            views.Add(wvAttentionIndicators);
+
+            IWizard wizardEnd = new WizardEnd(WizardName.UGCaptureAdminForm);
+            WizardView wvWizardEnd = new WizardView("WizardEnd", wizardEnd, 18);
+            wvWizardEnd.AllowCancel = wvWizardEnd.AllowBack = false;
+            views.Add(wvWizardEnd);
+
+            return views;
+        }
+
+        #endregion
+
+        #region Hons/LLB/BBS 4 App Wizard
+
+        public static List<WizardView> GetHonsLLBBBS4CaptureFormWizard(int yearchoice, string oldstuno, string Ref_no)
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard honsAdmissionChecks = new HonsAdmissionCheck(yearchoice, oldstuno, Ref_no);
+            WizardView wvHonsChecks = new WizardView("HonsAdmissionChecks", honsAdmissionChecks, 1);
+            (honsAdmissionChecks as HonsAdmissionCheck).AdmissionStudentValidated += new EventHandler<AdmissionStudentEventArgs>(LoadAdmissionStudent);
+            views.Add(wvHonsChecks);
+
+            IWizard stuPersonalDetails = new StudentPersonalDetails(Ref_no);
+            WizardView wvStuPersDetails = new WizardView("StuPersDetails", stuPersonalDetails, 2);
+            wvStuPersDetails.AllowBack = false;
+            (stuPersonalDetails as StudentPersonalDetails).AdmissionStudentCreated += new EventHandler<AdmissionStudentEventArgs>(LoadAdmissionStudent);
+            views.Add(wvStuPersDetails);
+
+            IWizard postgradDegreeDetails = new PostgradDegreeDetails();
+            WizardView wvPostgradDegreeDetails = new WizardView("PostgradDegreeDetails", postgradDegreeDetails, 3);
+            views.Add(wvPostgradDegreeDetails);
+
+            IWizard pgceSubjects = new PGCEStudentSubjectChoices();
+            WizardView wvPGCESubjects = new WizardView("PGCESubjects", pgceSubjects, 4);
+            views.Add(wvPGCESubjects);
+
+            IWizard prevStudies = new PreviousStudies();
+            WizardView wvPrevStudies = new WizardView("PreviousStudies", prevStudies, 5);
+            views.Add(wvPrevStudies);
+
+            IWizard stuAddressDetails = new StudentAddressDetails();
+            WizardView wvStuAddressDetails = new WizardView("StudentAddressDetails", stuAddressDetails, 6);
+            views.Add(wvStuAddressDetails);
+
+            IWizard guardAddressDetails = new AdmissionGuardianAddressDetails();
+            WizardView wvGuardAddressDetails = new WizardView("GuardianAddressDetails", guardAddressDetails, 7);
+            views.Add(wvGuardAddressDetails);
+            /*
+            IWizard schoolDetails = new SchoolDetails();
+            WizardView wvSchoolDetails = new WizardView("SchoolDetails", schoolDetails, 8);
+            views.Add(wvSchoolDetails);
+            */
+            IWizard residenceDetails = new ResidenceDetails();
+            WizardView wvResidenceDetails = new WizardView("ResidenceDetails", residenceDetails, 9);
+            views.Add(wvResidenceDetails);
+
+            IWizard accountPayer = new AccountPayer();
+            WizardView wvAccountPayer = new WizardView("AccountPayer", accountPayer, 10);
+            views.Add(wvAccountPayer);
+
+            IWizard additionalInfo = new AdditionalInfo();
+            WizardView wvAdditionalInfo = new WizardView("AdditionalInfo", additionalInfo, 11);
+            views.Add(wvAdditionalInfo);
+
+            IWizard postgradAttentionIndicators = new PostgradAttentionIndicators();
+            WizardView wvPostgradAttentionIndicators = new WizardView("PostgradAttentionIndicators", postgradAttentionIndicators, 12);
+            views.Add(wvPostgradAttentionIndicators);
+
+            IWizard wizardEnd = new WizardEnd(WizardName.UGCaptureAdminForm);
+            WizardView wvWizardEnd = new WizardView("WizardEnd", wizardEnd, 13);
+            wvWizardEnd.AllowCancel = false;
+            views.Add(wvWizardEnd);
+
+            return views;
+        }
+
+        #endregion
+
+        #region Postgraduate App Wizard
+
+        public static List<WizardView> GetPostgraduateCaptureFormWizard(int yearchoice, string oldstuno, string Ref_no)
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard pgAdmissionChecks = new PGAdmissionCheck(yearchoice, oldstuno, Ref_no);
+            WizardView wvPGChecks = new WizardView("PGChecks", pgAdmissionChecks, 1);
+            (pgAdmissionChecks as PGAdmissionCheck).AdmissionStudentValidated += new EventHandler<AdmissionStudentEventArgs>(LoadAdmissionStudent);
+            views.Add(wvPGChecks);
+
+            IWizard stuPersonalDetails = new StudentPersonalDetails(Ref_no);
+            WizardView wvStuPersDetails = new WizardView("StuPersDetails", stuPersonalDetails, 2);
+            wvStuPersDetails.AllowBack = false;
+            (stuPersonalDetails as StudentPersonalDetails).AdmissionStudentCreated += new EventHandler<AdmissionStudentEventArgs>(LoadAdmissionStudent);
+            views.Add(wvStuPersDetails);
+
+            IWizard postgradDegreeDetails = new PostgradDegreeDetails();
+            WizardView wvPostgradDegreeDetails = new WizardView("PostgradDegreeDetails", postgradDegreeDetails, 3);
+            views.Add(wvPostgradDegreeDetails);
+
+            IWizard prevStudies = new PreviousStudies();
+            WizardView wvPrevStudies = new WizardView("PreviousStudies", prevStudies, 4);
+            views.Add(wvPrevStudies);
+
+            IWizard stuAddressDetails = new StudentAddressDetails();
+            WizardView wvStuAddressDetails = new WizardView("StudentAddressDetails", stuAddressDetails, 5);
+            views.Add(wvStuAddressDetails);
+
+            IWizard guardAddressDetails = new AdmissionGuardianAddressDetails();
+            WizardView wvGuardAddressDetails = new WizardView("GuardianAddressDetails", guardAddressDetails, 6);
+            views.Add(wvGuardAddressDetails);
+            /*
+            IWizard schoolDetails = new SchoolDetails();
+            WizardView wvSchoolDetails = new WizardView("SchoolDetails", schoolDetails, 7);
+            views.Add(wvSchoolDetails);
+            */
+            IWizard residenceDetails = new ResidenceDetails();
+            WizardView wvResidenceDetails = new WizardView("ResidenceDetails", residenceDetails, 8);
+            views.Add(wvResidenceDetails);
+
+            IWizard accountPayer = new AccountPayer();
+            WizardView wvAccountPayer = new WizardView("AccountPayer", accountPayer, 9);
+            views.Add(wvAccountPayer);
+
+            IWizard additionalInfo = new AdditionalInfo();
+            WizardView wvAdditionalInfo = new WizardView("AdditionalInfo", additionalInfo, 10);
+            views.Add(wvAdditionalInfo);
+
+            IWizard postgradAttentionIndicators = new PostgradAttentionIndicators();
+            WizardView wvPostgradAttentionIndicators = new WizardView("PostgradAttentionIndicators", postgradAttentionIndicators, 11);
+            views.Add(wvPostgradAttentionIndicators);
+
+            IWizard wizardEnd = new WizardEnd(WizardName.UGCaptureAdminForm);
+            WizardView wvWizardEnd = new WizardView("WizardEnd", wizardEnd, 12);
+            wvWizardEnd.AllowCancel = false;
+            views.Add(wvWizardEnd);
+
+            return views;
+        }
+
+        #endregion
+
+        #region International App Wizard
+
+        public static List<WizardView> GetInternationalCaptureFormWizard()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard intAdmissionCheck = new IntAdmissionCheck();
+            WizardView wvIntAdmissionCheck = new WizardView("InternationalChecks", intAdmissionCheck, 1);
+            (intAdmissionCheck as IntAdmissionCheck).AdmissionStudentValidated += new EventHandler<AdmissionStudentEventArgs>(LoadAdmissionStudent);
+            views.Add(wvIntAdmissionCheck);
+
+            IWizard stuPersonalDetails = new StudentPersonalDetails(string.Empty);
+            WizardView wvStuPersDetails = new WizardView("StuPersDetails", stuPersonalDetails, 2);
+            wvStuPersDetails.AllowBack = false;
+            (stuPersonalDetails as StudentPersonalDetails).AdmissionStudentCreated += new EventHandler<AdmissionStudentEventArgs>(LoadAdmissionStudent);
+            views.Add(wvStuPersDetails);
+
+            IWizard stuDegree = new StudentDegreeDetails();
+            WizardView wvStuDegree = new WizardView("StuDegreeDetails", stuDegree, 3);
+            views.Add(wvStuDegree);
+
+            IWizard prevStudies = new PreviousStudies();
+            WizardView wvPrevStudies = new WizardView("PreviousStudies", prevStudies, 4);
+            views.Add(wvPrevStudies);
+
+            IWizard stuAddressDetails = new StudentAddressDetails();
+            WizardView wvStuAddressDetails = new WizardView("StudentAddressDetails", stuAddressDetails, 5);
+            views.Add(wvStuAddressDetails);
+
+            IWizard guardAddressDetails = new AdmissionGuardianAddressDetails();
+            WizardView wvGuardAddressDetails = new WizardView("GuardianAddressDetails", guardAddressDetails, 6);
+            views.Add(wvGuardAddressDetails);
+
+            IWizard schoolDetails = new SchoolDetails();
+            WizardView wvSchoolDetails = new WizardView("SchoolDetails", schoolDetails, 7);
+            views.Add(wvSchoolDetails);
+
+            IWizard matricResults = new AdmissionMatricResults(false);
+            WizardView wvMatricResults = new WizardView("MatricResults", matricResults, 8);
+            views.Add(wvMatricResults);
+
+            //IWizard schoolPrincipal = new AdmissionSchoolPrincipal();
+            //WizardView wvSchoolPrincipal = new WizardView("SchoolPrincipal", schoolPrincipal, 9);
+            //views.Add(wvSchoolPrincipal);
+
+            //IWizard finAid = new FinancialAid();
+            //WizardView wvFinAid = new WizardView("FinAid", finAid, 10);
+            //views.Add(wvFinAid);
+
+            IWizard rhodesFamily = new FamilyAtRhodes();
+            WizardView wvRhodesFamily = new WizardView("RhodesFamily", rhodesFamily, 11);
+            views.Add(wvRhodesFamily);
+
+            IWizard residenceDetails = new ResidenceDetails();
+            WizardView wvResidenceDetails = new WizardView("ResidenceDetails", residenceDetails, 12);
+            views.Add(wvResidenceDetails);
+
+            IWizard accountPayer = new AccountPayer();
+            WizardView wvAccountPayer = new WizardView("AccountPayer", accountPayer, 13);
+            views.Add(wvAccountPayer);
+
+            IWizard schoolHistory = new SchoolHistory();
+            WizardView wvSchoolHistory = new WizardView("SchoolHistory", schoolHistory, 14);
+            views.Add(wvSchoolHistory);
+
+            IWizard additionalInfo = new AdditionalInfo();
+            WizardView wvAdditionalInfo = new WizardView("AdditionalInfo", additionalInfo, 15);
+            views.Add(wvAdditionalInfo);
+
+            //Some BSC Subject choice goes here
+
+            IWizard attentionIndicators = new AttentionIndicators();
+            WizardView wvAttentionIndicators = new WizardView("AttentionIndicators", attentionIndicators, 17);
+            views.Add(wvAttentionIndicators);
+
+            IWizard wizardEnd = new WizardEnd(WizardName.UGCaptureAdminForm);
+            WizardView wvWizardEnd = new WizardView("WizardEnd", wizardEnd, 18);
+            wvWizardEnd.AllowCancel = false;
+            views.Add(wvWizardEnd);
+
+            return views;
+        }
+
+        #endregion
+
+        #region ACE App Wizard
+
+        public static List<WizardView> GetAdvCertInEducCaptureFormWizard()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard ACEAdmissionCheck = new ACEAdmissionCheck();
+            WizardView wvACEAdmissionCheck = new WizardView("ACEAdmissionCheck", ACEAdmissionCheck, 1);
+            (ACEAdmissionCheck as ACEAdmissionCheck).AdmissionStudentValidated += new EventHandler<AdmissionStudentEventArgs>(LoadAdmissionStudent);
+            views.Add(wvACEAdmissionCheck);
+
+            IWizard stuPersonalDetails = new StudentPersonalDetails(string.Empty);
+            WizardView wvStuPersDetails = new WizardView("StuPersDetails", stuPersonalDetails, 2);
+            wvStuPersDetails.AllowBack = false;
+            (stuPersonalDetails as StudentPersonalDetails).AdmissionStudentCreated += new EventHandler<AdmissionStudentEventArgs>(LoadAdmissionStudent);
+            views.Add(wvStuPersDetails);
+
+            IWizard aceDegreeDetails = new ACEDegreeDetails();
+            WizardView wvACEDegreeDetails = new WizardView("ACEDegreeDetails", aceDegreeDetails, 3);
+            views.Add(wvACEDegreeDetails);
+
+            IWizard prevStudies = new PreviousStudies();
+            WizardView wvPrevStudies = new WizardView("PreviousStudies", prevStudies, 4);
+            views.Add(wvPrevStudies);
+
+            IWizard stuAddressDetails = new StudentAddressDetails();
+            WizardView wvStuAddressDetails = new WizardView("StudentAddressDetails", stuAddressDetails, 5);
+            views.Add(wvStuAddressDetails);
+
+            IWizard schoolHistory = new SchoolHistory();
+            WizardView wvSchoolHistory = new WizardView("SchoolHistory", schoolHistory, 6);
+            views.Add(wvSchoolHistory);
+
+            IWizard aceFormDetails = new ACEFormDetails();
+            WizardView wvACEFormDetails = new WizardView("ACEFormDetails", aceFormDetails, 7);
+            views.Add(wvACEFormDetails);
+
+            IWizard aceAttentionIndicators = new ACEAttentionIndicators();
+            WizardView wvACEAttentionIndicators = new WizardView("ACEAttentionIndicators", aceAttentionIndicators, 8);
+            views.Add(wvACEAttentionIndicators);
+
+            IWizard wizardEnd = new WizardEnd(WizardName.UGCaptureAdminForm);
+            WizardView wvWizardEnd = new WizardView("WizardEnd", wizardEnd, 9);
+            wvWizardEnd.AllowCancel = false;
+            views.Add(wvWizardEnd);
+
+            return views;
+        }
+
+        #endregion
+
+        #region Admission Student Updtaes
+
+            #region Personal Details
+
+        public static List<WizardView> GetAdmissionsPersonalDetails()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard stuPersonalDetails = new StudentPersonalDetails(string.Empty);
+            WizardView wvStuPersDetails = new WizardView("StuPersDetails", stuPersonalDetails, 2);
+            wvStuPersDetails.AllowBack = false;
+            views.Add(wvStuPersDetails);
+
+            return views;
+        }
+
+            #endregion
+
+            #region Address Details
+
+        public static List<WizardView> GetAdmissionsAddressDetails()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard stuAddressDetails = new StudentAddressDetails();
+            WizardView wvStuAddressDetails = new WizardView("StudentAddressDetails", stuAddressDetails, 2);
+            wvStuAddressDetails.AllowBack = false;
+            views.Add(wvStuAddressDetails);
+
+            IWizard guardAddressDetails = new AdmissionGuardianAddressDetails();
+            WizardView wvGuardAddressDetails = new WizardView("GuardianAddressDetails", guardAddressDetails, 3);
+            views.Add(wvGuardAddressDetails);
+
+            IWizard additionalInfo = new AdditionalInfo();
+            WizardView wvAdditionalInfo = new WizardView("AdditionalInfo", additionalInfo, 4);
+            views.Add(wvAdditionalInfo);
+            /*
+            IWizard accountPayer = new AccountPayer();
+            WizardView wvAccountPayer = new WizardView("AccountPayer", accountPayer, 4);
+            views.Add(wvAccountPayer);
+            */
+            return views;
+        }
+
+            #endregion
+
+            #region Matric Subjects
+
+        public static List<WizardView> GetAdmissionMatricSubjects()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard matricResults = new AdmissionMatricResults(true);
+            WizardView wvMatricResults = new WizardView("MatricResults", matricResults, 2);
+            wvMatricResults.AllowBack = false;
+            views.Add(wvMatricResults);
+
+            //IWizard schoolPrincipal = new AdmissionSchoolPrincipal();
+            //WizardView wvSchoolPrincipal = new WizardView("SchoolPrincipal", schoolPrincipal, 3);
+            //views.Add(wvSchoolPrincipal);
+
+            IWizard rhodesFamily = new FamilyAtRhodes();
+            WizardView wvRhodesFamily = new WizardView("RhodesFamily", rhodesFamily, 4);
+            views.Add(wvRhodesFamily);
+
+            IWizard residenceDetails = new ResidenceDetails();
+            WizardView wvResidenceDetails = new WizardView("ResidenceDetails", residenceDetails, 5);
+            views.Add(wvResidenceDetails);
+
+            IWizard accountPayer = new AccountPayer();
+            WizardView wvAccountPayer = new WizardView("AccountPayer", accountPayer, 6);
+            views.Add(wvAccountPayer);
+
+            IWizard schoolHistory = new SchoolHistory();
+            WizardView wvSchoolHistory = new WizardView("SchoolHistory", schoolHistory, 7);
+            views.Add(wvSchoolHistory);
+
+            IWizard additionalInfo = new AdditionalInfo();
+            WizardView wvAdditionalInfo = new WizardView("AdditionalInfo", additionalInfo, 8);
+            views.Add(wvAdditionalInfo);
+
+            //Some BSC Subject choice goes here
+
+            IWizard attentionIndicators = new AttentionIndicators();
+            WizardView wvAttentionIndicators = new WizardView("AttentionIndicators", attentionIndicators, 9);
+            views.Add(wvAttentionIndicators);
+
+            IWizard wizardEnd = new WizardEnd(WizardName.UGCaptureAdminForm);
+            WizardView wvWizardEnd = new WizardView("WizardEnd", wizardEnd, 10);
+            wvWizardEnd.AllowCancel = wvWizardEnd.AllowBack = false;
+            views.Add(wvWizardEnd);
+
+            return views;
+
+        }
+
+        public static List<WizardView> GetAdministrativeMatricSubject()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard matricResults = new AdmissionMatricResults(true);
+            WizardView wvMatricResults = new WizardView("MatricResults", matricResults, 2);
+            wvMatricResults.AllowBack = false;
+            views.Add(wvMatricResults);
+
+            return views;
+        }
+
+            #endregion
+
+            #region Student Family
+
+        public static List<WizardView> GetAdmissionsStudentFamily()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard rhodesFamily = new FamilyAtRhodes(true);
+            WizardView wvRhodesFamily = new WizardView("RhodesFamily", rhodesFamily, 2);
+            wvRhodesFamily.AllowBack = false;
+            views.Add(wvRhodesFamily);
+
+            //IWizard additionalInfo = new AdditionalInfo(false);
+            //WizardView wvAdditionalInfo = new WizardView("AdditionalInfo", additionalInfo, 3);
+            //views.Add(wvAdditionalInfo);
+
+            return views;
+        }
+
+            #endregion
+
+            #region School Details
+
+        public static List<WizardView> GetAdmissionsSchoolDetails()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard schoolDetails = new SchoolDetails();
+            WizardView wvSchoolDetails = new WizardView("SchoolDetails", schoolDetails, 2);
+            wvSchoolDetails.AllowBack = false;
+            views.Add(wvSchoolDetails);
+
+            IWizard schoolHistory = new SchoolHistory();
+            WizardView wvSchoolHistory = new WizardView("SchoolHistory", schoolHistory, 3);
+            views.Add(wvSchoolHistory);
+
+            return views;
+        }
+
+            #endregion
+
+            #region Account Fees
+        
+        public static List<WizardView> GetAdmissionsAccountFeesDetails()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard accountPayer = new AccountPayer();
+            WizardView wvAccountPayer = new WizardView("AccountPayer", accountPayer, 2);
+            wvAccountPayer.AllowBack = false;
+            views.Add(wvAccountPayer);
+
+            return views;
+        }
+
+            #endregion
+
+        #endregion
+
+        #region Other Admission Updates
+
+            #region Financial Aid
+
+        public static List<WizardView> GetAdmissionFinancialAidDetails()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard financialAid = new FinancialAid();
+            WizardView wvFinancialAid = new WizardView("FinancialAid", financialAid, 2);
+            wvFinancialAid.AllowBack = false;
+            views.Add(wvFinancialAid);
+
+            return views;
+        }
+
+            #endregion
+
+            #region Residence Details
+
+        public static List<WizardView> GetAdmissionResidenceDetails()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard residenceDetails = new ResidenceDetails();
+            WizardView wvResidenceDetails = new WizardView("ResidenceDetails", residenceDetails, 2);
+            wvResidenceDetails.AllowBack = false;
+            views.Add(wvResidenceDetails);
+
+            return views;
+        }
+
+        public static List<WizardView> GetAdmissionMatricDetails()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard matricVerifiedType = new MatricVerifiedType();
+            WizardView wvmatricVerifiedType = new WizardView("MatricVerified", matricVerifiedType, 2);
+            wvmatricVerifiedType.AllowBack = false;
+            views.Add(wvmatricVerifiedType);
+
+            return views;
+        }
+
+        public static List<WizardView> GetAdmissionsDeanForm()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard deanForm = new DeanFormIndicator();
+            WizardView wvdeanFormAdmission = new WizardView("DeanForms", deanForm, 2);
+            wvdeanFormAdmission.AllowBack = false;
+            views.Add(wvdeanFormAdmission);
+
+            return views;
+        }
+
+        public static List<WizardView> GetAdmissionsExemptions()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard exemption = new Exemptions();
+            WizardView wvexemption = new WizardView("ExemptionDetails", exemption, 2);
+            wvexemption.AllowBack = false;
+            views.Add(wvexemption);
+
+            return views;
+        }
+
+        public static List<WizardView> GetAdmissionMail()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard mailReturned = new MailReturnedIndicator();
+            WizardView wvmailReturn = new WizardView("MailReturned", mailReturned, 2);
+            wvmailReturn.AllowBack = false;
+            views.Add(wvmailReturn);
+
+            return views;
+        }
+
+        public static List<WizardView> GetAdmissionComment()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard getComment = new GeneralAdmissionsComment();
+            WizardView wvgeneralComments = new WizardView("GeneralComments", getComment, 2);
+            wvgeneralComments.AllowBack = false;
+            views.Add(wvgeneralComments);
+
+            return views;
+        }
+
+            #endregion
+
+            #region Previous Degrees
+
+        public static List<WizardView> GetAdmissionsPreviousDegrees()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard prevStudies = new PreviousStudies();
+            WizardView wvPrevStudies = new WizardView("PreviousStudies", prevStudies, 2);
+            wvPrevStudies.AllowBack = false;
+            views.Add(wvPrevStudies);
+
+            return views;
+        }
+
+            #endregion
+
+            #region Degree Information
+
+        public static List<WizardView> GetAdmissionsDegreeInformation()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard stuDegree = new StudentDegreeDetails();
+            WizardView wvStuDegree = new WizardView("StuDegreeDetails", stuDegree, 2);
+            wvStuDegree.AllowBack = false;
+            views.Add(wvStuDegree);
+
+            return views;
+        }
+
+            #endregion
+
+            #region Principal/SCI Bursary/Misc
+
+        public static List<WizardView> GetAdmissionsSchoolPrincipalDetails()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard schoolPrincipal = new AdmissionSchoolPrincipal();
+            WizardView wvSchoolPrincipal = new WizardView("SchoolPrincipal", schoolPrincipal, 2);
+            wvSchoolPrincipal.AllowBack = false;
+            views.Add(wvSchoolPrincipal);
+
+            return views;
+        }
+
+            #endregion
+
+            #region Undergrad Signed App / Att Info
+
+        public static List<WizardView> GetAdmissionsSignedAppAndAttentionInfo()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard additionalInfo = new AdditionalInfo(true);
+            WizardView wvAdditionalInfo = new WizardView("AdditionalInfo", additionalInfo, 2);
+            wvAdditionalInfo.AllowBack = false;
+            views.Add(wvAdditionalInfo);
+
+            IWizard attentionIndicators = new AttentionIndicators();
+            WizardView wvAttentionIndicators = new WizardView("AttentionIndicators", attentionIndicators, 3);
+            views.Add(wvAttentionIndicators);
+
+            IWizard wizardEnd = new WizardEnd(WizardName.AdmissionsSignedAttention);
+            WizardView wvWizardEnd = new WizardView("WizardEnd", wizardEnd, 4);
+            wvWizardEnd.AllowCancel = wvWizardEnd.AllowBack = false;
+            views.Add(wvWizardEnd);
+
+            return views;
+        }
+
+            #endregion
+
+            #region Admission Notes
+
+        public static List<WizardView> GetAdmissionNotesUpdate()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard admissionNotes = new InternalAdmissionNotes();
+            WizardView wvInternalAdmissionNotes = new WizardView("InternalAdmissionNotes", admissionNotes, 2);
+            wvInternalAdmissionNotes.AllowBack = false;
+            views.Add(wvInternalAdmissionNotes);
+
+            return views;
+        }
+
+            #endregion
+
+            #region Postgrad Attention Flags
+
+        public static List<WizardView> GetPostgradAttentionFlags()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard attentionIndicators = new PostgradAttentionIndicators();
+            WizardView wvAttentionIndicators = new WizardView("PostgradAttentionIndicators", attentionIndicators, 2);
+            views.Add(wvAttentionIndicators);
+
+            IWizard wizardEnd = new WizardEnd(WizardName.AdmissionsPostgradAttention);
+            WizardView wvWizardEnd = new WizardView("WizardEnd", wizardEnd, 3);
+            wvWizardEnd.AllowCancel = wvWizardEnd.AllowBack = false;
+            views.Add(wvWizardEnd);
+
+            return views;
+        }
+
+            #endregion
+
+            #region Postgrad Application Progress
+
+        public static List<WizardView> GetPostgradApplicationProgress(bool read_only)
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard postgradDegree = new PostgradDegreeDetails(true,read_only);
+            WizardView wvPostgradDegree = new WizardView("PostgradDegreeDetails", postgradDegree, 2);
+            wvPostgradDegree.AllowBack = false;
+            views.Add(wvPostgradDegree);
+
+            //IWizard pgceChoices = new PGCEChoices();
+            //WizardView wvPGCEChoices = new WizardView("PGCEChoices", pgceChoices, 3);
+            //views.Add(wvPGCEChoices);
+
+            IWizard postgradProgress = new PostgradApplicationProgress(read_only);
+            WizardView wvPostgradProgress = new WizardView("PostgradApplicationProgress", postgradProgress, 4);
+            wvPostgradProgress.AllowBack = false;
+            wvPostgradProgress.ConfirmCancel = true;
+
+            if (read_only)
+            {
+                //wvPostgradProgress.AllowBack = true; deletes data when you can go back for other applications - do not allow!!! 
+                wvPostgradProgress.AllowFinish = false;
+                wvPostgradProgress.ConfirmCancel = false;
+            }
+            views.Add(wvPostgradProgress);
+
+            return views;
+        }
+
+            #endregion
+
+      /*   #region Matric Verified Type
+
+          public static List<WizardView> GetAdmissionMatricVerifiedType()
+        {
+            List<WizardView> views = new List<WizardView>();
+
+            IWizard wizardStart = new WizardStart();
+            WizardView wvWizardStart = new WizardView("WizardStart", wizardStart, 1);
+            views.Add(wvWizardStart);
+
+            IWizard matricverified = new MatricVerifiedType();
+            WizardView wvMatricVerified = new WizardView("MatricVerified", matricverified, 2);
+            wvMatricVerified.AllowBack = false;
+            views.Add(wvMatricVerified);
+
+            return views;
+        }
+        
+        #endregion*/
+
+        #endregion
+
+        #region Event Handlers
+
+        static void LoadAdmissionStudent(object sender, AdmissionStudentEventArgs e)
+        {
+            if (AdmissionStudentLoaded != null)
+            {
+                AdmissionStudentLoaded(sender, e);
+            }
+        }
+
+        #endregion
+    }
+}

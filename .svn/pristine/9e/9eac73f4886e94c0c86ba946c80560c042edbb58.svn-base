@@ -1,0 +1,754 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{0D42CB2B-E5E3-4C94-A81A-B8BE1B89EE44}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Admissions</RootNamespace>
+    <AssemblyName>Admissions</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Office.Interop.Excel, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.Office.Interop.Word, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.Common, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91" />
+    <Reference Include="Microsoft.ReportViewer.WinForms, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL" />
+    <Reference Include="PN_Admissions, Version=10.0.1.50000, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Proxies\NS_Admissions\PN_Admissions.dll</HintPath>
+    </Reference>
+    <Reference Include="PN_Dept, Version=10.0.1.50000, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Proxies\NS_Dept\PN_Dept.dll</HintPath>
+    </Reference>
+    <Reference Include="PN_Honours, Version=10.0.1.50000, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Proxies\NS_Honours\PN_Honours.dll</HintPath>
+    </Reference>
+    <Reference Include="PN_StuInfo, Version=10.0.1.50000, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Proxies\NS_StuInfo\PN_StuInfo.dll</HintPath>
+    </Reference>
+    <Reference Include="PN_StuReg, Version=10.0.1.50000, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Proxies\NS_StuReg\PN_StuReg.dll</HintPath>
+    </Reference>
+    <Reference Include="PN_System, Version=10.0.1.50000, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Proxies\NS_System\PN_System.dll</HintPath>
+    </Reference>
+    <Reference Include="Proxy">
+      <HintPath>..\..\c# Standard Classes\Proxy\Proxy\bin\Debug\Proxy.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\c# Standard Classes\Item.cs">
+      <Link>Utilities\Item.cs</Link>
+    </Compile>
+    <Compile Include="..\..\c# Standard Classes\NullableDateTimePicker.cs">
+      <Link>CustomControls\NullableDateTimePicker.cs</Link>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="..\..\DMU\DMU\Shared Screens\PDFViewer.cs">
+      <Link>SharedScreens\PDFViewer.cs</Link>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="..\..\DMU\DMU\Shared Screens\PDFViewer.designer.cs">
+      <Link>SharedScreens\PDFViewer.designer.cs</Link>
+      <DependentUpon>PDFViewer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="..\..\DMU\DMU\Shared Screens\PicForm.cs">
+      <Link>SharedScreens\PicForm.cs</Link>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="..\..\DMU\DMU\Shared Screens\PicForm.designer.cs">
+      <Link>SharedScreens\PicForm.designer.cs</Link>
+      <DependentUpon>PicForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="..\..\DMU\DMU\Utilities\DisplayImages.cs">
+      <Link>SharedScreens\DisplayImages.cs</Link>
+    </Compile>
+    <Compile Include="..\..\DMU\DMU\Utilities\utils.cs">
+      <Link>Utilities\utils.cs</Link>
+    </Compile>
+    <Compile Include="..\..\RegistrarsSystem\RegistrarsSystem\AcademicAdmin\DeleteStu.cs">
+      <Link>AdmissionForms\DeleteStu.cs</Link>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="..\..\RegistrarsSystem\RegistrarsSystem\AcademicAdmin\DeleteStu.designer.cs">
+      <Link>AdmissionForms\DeleteStu.designer.cs</Link>
+      <DependentUpon>DeleteStu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="..\..\Shared_Screens\RhodesWizard\IWizard.cs">
+      <Link>RhodesWizard\IWizard.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Shared_Screens\RhodesWizard\Wizard.cs">
+      <Link>RhodesWizard\Wizard.cs</Link>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="..\..\Shared_Screens\RhodesWizard\Wizard.designer.cs">
+      <Link>RhodesWizard\Wizard.designer.cs</Link>
+      <DependentUpon>Wizard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="..\..\Shared_Screens\RhodesWizard\WizardSortComparer.cs">
+      <Link>RhodesWizard\WizardSortComparer.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Shared_Screens\RhodesWizard\WizardUtils.cs">
+      <Link>RhodesWizard\WizardUtils.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Shared_Screens\RhodesWizard\WizardView.cs">
+      <Link>RhodesWizard\WizardView.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Shared_Screens\ThinkManager\SplashScreen.cs">
+      <Link>SplashScreen\SplashScreen.cs</Link>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="..\..\Shared_Screens\ThinkManager\SplashScreen.designer.cs">
+      <Link>SplashScreen\SplashScreen.designer.cs</Link>
+      <DependentUpon>SplashScreen.cs</DependentUpon>
+    </Compile>
+    <Compile Include="..\..\StudentDetails\StudentDetails\CustomDataGridView.cs">
+      <Link>CustomControls\CustomDataGridView.cs</Link>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="..\..\StudentDetails\StudentDetails\SearchGrid\Search_Grid_Students.cs">
+      <Link>SharedScreens\Search_Grid_Students.cs</Link>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="..\..\StudentDetails\StudentDetails\SearchGrid\Search_Grid_Students.designer.cs">
+      <Link>SharedScreens\Search_Grid_Students.designer.cs</Link>
+      <DependentUpon>Search_Grid_Students.cs</DependentUpon>
+    </Compile>
+    <Compile Include="..\..\StudentRegistration\StudentRegistration\RegistrationBinding\AddressTypeBinding.cs">
+      <Link>Utilities\AddressTypeBinding.cs</Link>
+    </Compile>
+    <Compile Include="AdmissionForms\ACE\ACEAdmissionCheck.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\ACE\ACEAdmissionCheck.Designer.cs">
+      <DependentUpon>ACEAdmissionCheck.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\ACE\ACEAttentionIndicators.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\ACE\ACEAttentionIndicators.Designer.cs">
+      <DependentUpon>ACEAttentionIndicators.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\ACE\ACEDegreeDetails.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\ACE\ACEDegreeDetails.Designer.cs">
+      <DependentUpon>ACEDegreeDetails.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\ACE\ACEFormDetails.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\ACE\ACEFormDetails.Designer.cs">
+      <DependentUpon>ACEFormDetails.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\Hons_LLB_BBS4\HonsAdmissionCheck.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\Hons_LLB_BBS4\HonsAdmissionCheck.Designer.cs">
+      <DependentUpon>HonsAdmissionCheck.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\International\IntAdmissionCheck.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\International\IntAdmissionCheck.Designer.cs">
+      <DependentUpon>IntAdmissionCheck.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\OnlineApps\UploadDoc.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\OnlineApps\UploadDoc.Designer.cs">
+      <DependentUpon>UploadDoc.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\OnlineApps\FormsRecieved.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\OnlineApps\FormsRecieved.designer.cs">
+      <DependentUpon>FormsRecieved.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\OnlineApps\OnlineApplication.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\OnlineApps\OnlineApplication.designer.cs">
+      <DependentUpon>OnlineApplication.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\OnlineApps\OnlineReportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\OnlineApps\OnlineReportForm.Designer.cs">
+      <DependentUpon>OnlineReportForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\OnlineApps\UnCheckedForms.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\OnlineApps\UnCheckedForms.designer.cs">
+      <DependentUpon>UnCheckedForms.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\OnlineApps\PayConfirmation.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\OnlineApps\PayConfirmation.designer.cs">
+      <DependentUpon>PayConfirmation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\OnlineApps\ViewOnLineApp.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\OnlineApps\ViewOnLineApp.Designer.cs">
+      <DependentUpon>ViewOnLineApp.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\Postgraduate\PGAdmissionCheck.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\Postgraduate\PGAdmissionCheck.Designer.cs">
+      <DependentUpon>PGAdmissionCheck.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\AccountPayer.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\AccountPayer.Designer.cs">
+      <DependentUpon>AccountPayer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\AdditionalInfo.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\AdditionalInfo.Designer.cs">
+      <DependentUpon>AdditionalInfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\AttentionIndicators.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\AttentionIndicators.Designer.cs">
+      <DependentUpon>AttentionIndicators.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\FamilyAtRhodes.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\FamilyAtRhodes.Designer.cs">
+      <DependentUpon>FamilyAtRhodes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\FinancialAid.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\FinancialAid.Designer.cs">
+      <DependentUpon>FinancialAid.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\AdmissionGuardianAddressDetails.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\AdmissionGuardianAddressDetails.Designer.cs">
+      <DependentUpon>AdmissionGuardianAddressDetails.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\AdmissionMatricResults.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\AdmissionMatricResults.Designer.cs">
+      <DependentUpon>AdmissionMatricResults.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\InternalAdmissionNotes.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\InternalAdmissionNotes.Designer.cs">
+      <DependentUpon>InternalAdmissionNotes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\PDFViewer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\PDFViewer.Designer.cs">
+      <DependentUpon>PDFViewer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\PGCEChoices.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\PGCEChoices.Designer.cs">
+      <DependentUpon>PGCEChoices.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\PGCEStudentSubjectChoices.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\PGCEStudentSubjectChoices.Designer.cs">
+      <DependentUpon>PGCEStudentSubjectChoices.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\PostgradApplicationProgress.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\PostgradApplicationProgress.Designer.cs">
+      <DependentUpon>PostgradApplicationProgress.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\PostgradAttentionIndicators.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\PostgradAttentionIndicators.Designer.cs">
+      <DependentUpon>PostgradAttentionIndicators.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\PostgradDegreeDetails.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\PostgradDegreeDetails.Designer.cs">
+      <DependentUpon>PostgradDegreeDetails.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\ResidenceDetails.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\ResidenceDetails.Designer.cs">
+      <DependentUpon>ResidenceDetails.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\SchoolDetails.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\SchoolDetails.Designer.cs">
+      <DependentUpon>SchoolDetails.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\SchoolHistory.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\SchoolHistory.Designer.cs">
+      <DependentUpon>SchoolHistory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\AdmissionSchoolPrincipal.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\AdmissionSchoolPrincipal.Designer.cs">
+      <DependentUpon>AdmissionSchoolPrincipal.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\StudentAddressDetails.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\StudentAddressDetails.designer.cs">
+      <DependentUpon>StudentAddressDetails.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\PreviousStudies.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\PreviousStudies.Designer.cs">
+      <DependentUpon>PreviousStudies.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\StudentDegreeDetails.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\StudentDegreeDetails.Designer.cs">
+      <DependentUpon>StudentDegreeDetails.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\StudentPersonalDetails.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\StudentPersonalDetails.Designer.cs">
+      <DependentUpon>StudentPersonalDetails.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\Transcript.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\Transcript.Designer.cs">
+      <DependentUpon>Transcript.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\WizardEnd.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\WizardEnd.Designer.cs">
+      <DependentUpon>WizardEnd.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\WizardStart.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\SharedForms\WizardStart.Designer.cs">
+      <DependentUpon>WizardStart.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\Undergraduate\UGAdmissionCheck.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\Undergraduate\UGAdmissionCheck.Designer.cs">
+      <DependentUpon>UGAdmissionCheck.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AdmissionForms\OnlineApps\XADMList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AdmissionForms\OnlineApps\XADMList.Designer.cs">
+      <DependentUpon>XADMList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="EventArguments\AdmissionStudentEventArgs.cs" />
+    <Compile Include="EventArguments\SubjectChoiceSelected.cs" />
+    <Compile Include="MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SharedScreens\SearchAdmissions.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SharedScreens\SearchAdmissions.designer.cs">
+      <DependentUpon>SearchAdmissions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UtilityClasses\AdmissionConstants.cs" />
+    <Compile Include="UtilityClasses\AdmissionStateItems.cs" />
+    <Compile Include="UtilityClasses\AdmissionUtilities.cs" />
+    <Compile Include="UtilityClasses\BooleanStringBinding.cs" />
+    <Compile Include="UtilityClasses\AdmissionEnums.cs" />
+    <Compile Include="UtilityClasses\Global.cs" />
+    <Compile Include="UtilityClasses\AdmissionWizardViewBuilder.cs" />
+    <Compile Include="UtilityScreens\EntryStatusDescriptions.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UtilityScreens\EntryStatusDescriptions.Designer.cs">
+      <DependentUpon>EntryStatusDescriptions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UtilityScreens\MatricPoints.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UtilityScreens\MatricPoints.Designer.cs">
+      <DependentUpon>MatricPoints.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UtilityScreens\DegreeAdditionalInfo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UtilityScreens\DegreeAdditionalInfo.Designer.cs">
+      <DependentUpon>DegreeAdditionalInfo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UtilityScreens\NbtResults.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UtilityScreens\NbtResults.Designer.cs">
+      <DependentUpon>NbtResults.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UtilityScreens\NewSchoolDetails.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UtilityScreens\NewSchoolDetails.Designer.cs">
+      <DependentUpon>NewSchoolDetails.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UtilityScreens\PGCESubjectChoices.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UtilityScreens\PGCESubjectChoices.Designer.cs">
+      <DependentUpon>PGCESubjectChoices.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UtilityScreens\pse_results.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UtilityScreens\pse_results.Designer.cs">
+      <DependentUpon>pse_results.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UtilityScreens\ResidenceLookup.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UtilityScreens\ResidenceLookup.Designer.cs">
+      <DependentUpon>ResidenceLookup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UtilityScreens\RhodesDegree.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UtilityScreens\RhodesDegree.Designer.cs">
+      <DependentUpon>RhodesDegree.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UtilityScreens\SubjectChoice.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UtilityScreens\SubjectChoice.Designer.cs">
+      <DependentUpon>SubjectChoice.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="..\..\DMU\DMU\Shared Screens\PDFViewer.resx">
+      <Link>SharedScreens\PDFViewer.resx</Link>
+      <DependentUpon>PDFViewer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\DMU\DMU\Shared Screens\PicForm.resx">
+      <Link>SharedScreens\PicForm.resx</Link>
+      <DependentUpon>PicForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\RegistrarsSystem\RegistrarsSystem\AcademicAdmin\DeleteStu.resx">
+      <Link>AdmissionForms\DeleteStu.resx</Link>
+      <DependentUpon>DeleteStu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\Shared_Screens\RhodesWizard\Wizard.resx">
+      <Link>RhodesWizard\Wizard.resx</Link>
+      <DependentUpon>Wizard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\Shared_Screens\ThinkManager\SplashScreen.resx">
+      <Link>SplashScreen\SplashScreen.resx</Link>
+      <DependentUpon>SplashScreen.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\StudentDetails\StudentDetails\SearchGrid\Search_Grid_Students.resx">
+      <Link>SharedScreens\Search_Grid_Students.resx</Link>
+      <DependentUpon>Search_Grid_Students.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\ACE\ACEAdmissionCheck.resx">
+      <DependentUpon>ACEAdmissionCheck.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\ACE\ACEAttentionIndicators.resx">
+      <DependentUpon>ACEAttentionIndicators.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\ACE\ACEDegreeDetails.resx">
+      <DependentUpon>ACEDegreeDetails.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\ACE\ACEFormDetails.resx">
+      <DependentUpon>ACEFormDetails.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\Hons_LLB_BBS4\HonsAdmissionCheck.resx">
+      <DependentUpon>HonsAdmissionCheck.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\International\IntAdmissionCheck.resx">
+      <DependentUpon>IntAdmissionCheck.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\OnlineApps\UploadDoc.resx">
+      <DependentUpon>UploadDoc.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\OnlineApps\FormsRecieved.resx">
+      <DependentUpon>FormsRecieved.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\OnlineApps\OnlineApplication.resx">
+      <DependentUpon>OnlineApplication.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\OnlineApps\OnlineReportForm.resx">
+      <DependentUpon>OnlineReportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\OnlineApps\UnCheckedForms.resx">
+      <DependentUpon>UnCheckedForms.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\OnlineApps\PayConfirmation.resx">
+      <DependentUpon>PayConfirmation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\OnlineApps\ViewOnLineApp.resx">
+      <DependentUpon>ViewOnLineApp.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\Postgraduate\PGAdmissionCheck.resx">
+      <DependentUpon>PGAdmissionCheck.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\AccountPayer.resx">
+      <DependentUpon>AccountPayer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\AdditionalInfo.resx">
+      <DependentUpon>AdditionalInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\AttentionIndicators.resx">
+      <DependentUpon>AttentionIndicators.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\FamilyAtRhodes.resx">
+      <DependentUpon>FamilyAtRhodes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\FinancialAid.resx">
+      <DependentUpon>FinancialAid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\AdmissionGuardianAddressDetails.resx">
+      <DependentUpon>AdmissionGuardianAddressDetails.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\AdmissionMatricResults.resx">
+      <DependentUpon>AdmissionMatricResults.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\InternalAdmissionNotes.resx">
+      <DependentUpon>InternalAdmissionNotes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\PDFViewer.resx">
+      <DependentUpon>PDFViewer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\PGCEChoices.resx">
+      <DependentUpon>PGCEChoices.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\PGCEStudentSubjectChoices.resx">
+      <DependentUpon>PGCEStudentSubjectChoices.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\PostgradApplicationProgress.resx">
+      <DependentUpon>PostgradApplicationProgress.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\PostgradAttentionIndicators.resx">
+      <DependentUpon>PostgradAttentionIndicators.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\PostgradDegreeDetails.resx">
+      <DependentUpon>PostgradDegreeDetails.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\ResidenceDetails.resx">
+      <DependentUpon>ResidenceDetails.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\SchoolDetails.resx">
+      <DependentUpon>SchoolDetails.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\SchoolHistory.resx">
+      <DependentUpon>SchoolHistory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\AdmissionSchoolPrincipal.resx">
+      <DependentUpon>AdmissionSchoolPrincipal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\StudentAddressDetails.resx">
+      <DependentUpon>StudentAddressDetails.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\PreviousStudies.resx">
+      <DependentUpon>PreviousStudies.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\StudentDegreeDetails.resx">
+      <DependentUpon>StudentDegreeDetails.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\StudentPersonalDetails.resx">
+      <DependentUpon>StudentPersonalDetails.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\Transcript.resx">
+      <DependentUpon>Transcript.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\WizardEnd.resx">
+      <DependentUpon>WizardEnd.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\SharedForms\WizardStart.resx">
+      <DependentUpon>WizardStart.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\Undergraduate\UGAdmissionCheck.resx">
+      <DependentUpon>UGAdmissionCheck.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AdmissionForms\OnlineApps\XADMList.resx">
+      <DependentUpon>XADMList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <EmbeddedResource Include="Reports\OnlineApps\FormsRecieved.rdlc" />
+    <EmbeddedResource Include="Reports\OnlineApps\OnlineStats.rdlc" />
+    <EmbeddedResource Include="Reports\OnlineApps\PayConfirmation.rdlc" />
+    <EmbeddedResource Include="Reports\OnlineApps\Unchecked.rdlc" />
+    <EmbeddedResource Include="SharedScreens\SearchAdmissions.resx">
+      <DependentUpon>SearchAdmissions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UtilityScreens\EntryStatusDescriptions.resx">
+      <DependentUpon>EntryStatusDescriptions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UtilityScreens\MatricPoints.resx">
+      <DependentUpon>MatricPoints.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UtilityScreens\DegreeAdditionalInfo.resx">
+      <DependentUpon>DegreeAdditionalInfo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UtilityScreens\NbtResults.resx">
+      <DependentUpon>NbtResults.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UtilityScreens\NewSchoolDetails.resx">
+      <DependentUpon>NewSchoolDetails.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UtilityScreens\PGCESubjectChoices.resx">
+      <DependentUpon>PGCESubjectChoices.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UtilityScreens\pse_results.resx">
+      <DependentUpon>pse_results.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UtilityScreens\ResidenceLookup.resx">
+      <DependentUpon>ResidenceLookup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UtilityScreens\RhodesDegree.resx">
+      <DependentUpon>RhodesDegree.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UtilityScreens\SubjectChoice.resx">
+      <DependentUpon>SubjectChoice.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="Properties\DataSources\NS_Admissions.StrongTypesNS.DS_ADM_STUDataSet.datasource" />
+    <None Include="Properties\DataSources\NS_Admissions.StrongTypesNS.ds_nbt_fileDataSet+tt_nbtfileDataTable.datasource" />
+    <None Include="Properties\DataSources\NS_Admissions.StrongTypesNS.ds_nbt_fileDataSet+tt_pse_resultsDataTable.datasource" />
+    <None Include="Properties\DataSources\NS_Admissions.StrongTypesNS.DS_XADMDataSet+tt_xadmDataTable1.datasource" />
+    <None Include="Properties\DataSources\NS_Admissions.StrongTypesNS.DS_XADMDataSet.datasource" />
+    <None Include="Properties\DataSources\NS_System.StrongTypesNS.ds_genDataSet+TT_GENDataTable.datasource" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\RUpurple.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\RULogo.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\no_photo.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="AcroPDFLib">
+      <Guid>{05BFD3F1-6319-4F30-B752-C7A22889BCC4}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="AxAcroPDFLib">
+      <Guid>{05BFD3F1-6319-4F30-B752-C7A22889BCC4}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>aximp</WrapperTool>
+      <Isolated>False</Isolated>
+    </COMReference>
+    <COMReference Include="WindowsInstaller">
+      <Guid>{000C1092-0000-0000-C000-000000000046}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>1033</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

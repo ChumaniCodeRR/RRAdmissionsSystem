@@ -1,0 +1,107 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using Utilities;
+
+namespace Admissions.AdmissionForms
+{
+    public partial class FormsRecieved : Form
+    {
+
+        DataView dv_list;
+
+        public FormsRecieved()
+        {
+            InitializeComponent();
+        }
+
+        bool loaded = false;
+
+        private void FormsRecieved_Load(object sender, EventArgs e)
+        {
+             try
+            {
+                NS_Admissions.StrongTypesNS.DS_XADMDataSet ds_xadm = Proxy.Admissions.get_outstanding_forms();
+                dv_list = new DataView(ds_xadm.tt_xadm);
+                filter();
+                loaded = true;
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+           
+        }
+
+        private void filter()
+        {
+            dv_list.RowFilter = "stuno like '" + txt_reference.Text + "*' and surn like '" + txt_surn.Text + "*'";
+            dv_list.Sort = "off_dte";
+            bs_forms.DataSource = dv_list;          
+        }
+
+        private void txt_reference_TextChanged(object sender, EventArgs e)
+        {
+            filter();
+        }
+
+        private void txt_surn_TextChanged(object sender, EventArgs e)
+        {
+            filter();
+        }
+
+        private void btn_print_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        void dg_list_CellValueChanged(object sender, System.Windows.Forms.DataGridViewCellEventArgs e)
+        {
+           try
+            {
+                if (loaded == true)
+                {
+                    if (dg_list.CurrentCell == null) return;
+                                       
+                    if (dg_list.CurrentCell.OwningColumn.Name.Equals(cn_results.Name))
+                    {
+                        string tempref = dg_list[cn_ref_no.Name, e.RowIndex].Value.ToString();
+                        bool tempresults = bool.Parse(dg_list[cn_results.Name, e.RowIndex].Value.ToString());
+                        
+                        Proxy.Admissions.update_recieved_forms(tempref, tempresults);
+
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+          
+        }
+
+        private void dg_list_CurrentCellDirtyStateChanged(object sender, EventArgs e)
+        {
+            if (dg_list.IsCurrentCellDirty && dg_list.CurrentCell.GetType().Equals(typeof(DataGridViewCheckBoxCell)))
+            {
+                dg_list.CommitEdit(DataGridViewDataErrorContexts.Commit);
+            }
+        }
+
+        private void btnPrint_Click(object sender, EventArgs e)
+        {
+            if (dv_list.Count > 0)
+            {
+                OnlineApps.OnlineReportForm frmReport = new OnlineApps.OnlineReportForm("FormsRecieved", dv_list);
+                frmReport.Show();
+            }
+        }
+       
+    }
+}

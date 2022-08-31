@@ -1,0 +1,382 @@
+﻿namespace Admissions.AdmissionForms
+{
+    partial class FormsRecieved
+    {
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormsRecieved));
+            this.textBox22 = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.txt_surn = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.txt_reference = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.bs_forms = new System.Windows.Forms.BindingSource(this.components);
+            this.dS_XADMDataSet = new NS_Admissions.StrongTypesNS.DS_XADMDataSet();
+            this.btn_close = new System.Windows.Forms.Button();
+            this.dg_list = new CustomDataGridView();
+            this.btnPrint = new System.Windows.Forms.Button();
+            this.cn_stuno = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.surnDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.namestrDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.titlDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.oldstunoDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.admyrDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.degr1DataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.degr2DataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dobDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.idDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.appstatDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.unwtptsDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.punwtptsDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.offdteDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cn_results = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.cn_fees = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.cn_ref_no = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            ((System.ComponentModel.ISupportInitialize)(this.bs_forms)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dS_XADMDataSet)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dg_list)).BeginInit();
+            this.SuspendLayout();
+            // 
+            // textBox22
+            // 
+            this.textBox22.Anchor = System.Windows.Forms.AnchorStyles.Top;
+            this.textBox22.BackColor = System.Drawing.SystemColors.Window;
+            this.textBox22.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.textBox22.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBox22.ForeColor = System.Drawing.Color.Purple;
+            this.textBox22.Location = new System.Drawing.Point(212, 2);
+            this.textBox22.Name = "textBox22";
+            this.textBox22.Size = new System.Drawing.Size(367, 19);
+            this.textBox22.TabIndex = 169;
+            this.textBox22.TabStop = false;
+            this.textBox22.Text = "Online Forms Received";
+            this.textBox22.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(255, 30);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(52, 13);
+            this.label6.TabIndex = 175;
+            this.label6.Text = "Surname:";
+            // 
+            // txt_surn
+            // 
+            this.txt_surn.Location = new System.Drawing.Point(313, 27);
+            this.txt_surn.Name = "txt_surn";
+            this.txt_surn.Size = new System.Drawing.Size(279, 20);
+            this.txt_surn.TabIndex = 172;
+            this.txt_surn.TextChanged += new System.EventHandler(this.txt_surn_TextChanged);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(61, 30);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(87, 13);
+            this.label3.TabIndex = 174;
+            this.label3.Text = "Student Number:";
+            // 
+            // txt_reference
+            // 
+            this.txt_reference.Location = new System.Drawing.Point(154, 27);
+            this.txt_reference.Name = "txt_reference";
+            this.txt_reference.Size = new System.Drawing.Size(95, 20);
+            this.txt_reference.TabIndex = 171;
+            this.txt_reference.TextChanged += new System.EventHandler(this.txt_reference_TextChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Location = new System.Drawing.Point(4, 30);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(61, 13);
+            this.label1.TabIndex = 173;
+            this.label1.Text = "Filter By: ";
+            // 
+            // bs_forms
+            // 
+            this.bs_forms.DataMember = "tt_xadm";
+            this.bs_forms.DataSource = this.dS_XADMDataSet;
+            // 
+            // dS_XADMDataSet
+            // 
+            this.dS_XADMDataSet.DataSetName = "DS_XADMDataSet";
+            this.dS_XADMDataSet.SchemaSerializationMode = System.Data.SchemaSerializationMode.IncludeSchema;
+            // 
+            // btn_close
+            // 
+            this.btn_close.Location = new System.Drawing.Point(317, 440);
+            this.btn_close.Name = "btn_close";
+            this.btn_close.Size = new System.Drawing.Size(75, 23);
+            this.btn_close.TabIndex = 179;
+            this.btn_close.Text = "Close";
+            this.btn_close.UseVisualStyleBackColor = true;
+            this.btn_close.Click += new System.EventHandler(this.btn_print_Click);
+            // 
+            // dg_list
+            // 
+            this.dg_list.AllowUserToAddRows = false;
+            this.dg_list.AllowUserToDeleteRows = false;
+            this.dg_list.AutoGenerateColumns = false;
+            this.dg_list.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dg_list.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.cn_stuno,
+            this.surnDataGridViewTextBoxColumn,
+            this.namestrDataGridViewTextBoxColumn,
+            this.titlDataGridViewTextBoxColumn,
+            this.oldstunoDataGridViewTextBoxColumn,
+            this.admyrDataGridViewTextBoxColumn,
+            this.degr1DataGridViewTextBoxColumn,
+            this.degr2DataGridViewTextBoxColumn,
+            this.dobDataGridViewTextBoxColumn,
+            this.idDataGridViewTextBoxColumn,
+            this.appstatDataGridViewTextBoxColumn,
+            this.unwtptsDataGridViewTextBoxColumn,
+            this.punwtptsDataGridViewTextBoxColumn,
+            this.offdteDataGridViewTextBoxColumn,
+            this.cn_results,
+            this.cn_fees,
+            this.cn_ref_no});
+            this.dg_list.DataSource = this.bs_forms;
+            this.dg_list.Location = new System.Drawing.Point(1, 53);
+            this.dg_list.MultiSelect = false;
+            this.dg_list.Name = "dg_list";
+            this.dg_list.RowTemplate.DefaultCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dg_list.Size = new System.Drawing.Size(787, 381);
+            this.dg_list.TabIndex = 170;
+            this.dg_list.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dg_list_CellValueChanged);
+            this.dg_list.CurrentCellDirtyStateChanged += new System.EventHandler(this.dg_list_CurrentCellDirtyStateChanged);
+            // 
+            // btnPrint
+            // 
+            this.btnPrint.Location = new System.Drawing.Point(398, 440);
+            this.btnPrint.Name = "btnPrint";
+            this.btnPrint.Size = new System.Drawing.Size(75, 23);
+            this.btnPrint.TabIndex = 180;
+            this.btnPrint.Text = "Print";
+            this.btnPrint.UseVisualStyleBackColor = true;
+            this.btnPrint.Click += new System.EventHandler(this.btnPrint_Click);
+            // 
+            // cn_stuno
+            // 
+            this.cn_stuno.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
+            this.cn_stuno.DataPropertyName = "stuno";
+            this.cn_stuno.HeaderText = "Stuno";
+            this.cn_stuno.Name = "cn_stuno";
+            this.cn_stuno.ReadOnly = true;
+            this.cn_stuno.Width = 60;
+            // 
+            // surnDataGridViewTextBoxColumn
+            // 
+            this.surnDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
+            this.surnDataGridViewTextBoxColumn.DataPropertyName = "surn";
+            this.surnDataGridViewTextBoxColumn.HeaderText = "Surname";
+            this.surnDataGridViewTextBoxColumn.Name = "surnDataGridViewTextBoxColumn";
+            this.surnDataGridViewTextBoxColumn.ReadOnly = true;
+            this.surnDataGridViewTextBoxColumn.Width = 74;
+            // 
+            // namestrDataGridViewTextBoxColumn
+            // 
+            this.namestrDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
+            this.namestrDataGridViewTextBoxColumn.DataPropertyName = "namestr";
+            this.namestrDataGridViewTextBoxColumn.HeaderText = "Names";
+            this.namestrDataGridViewTextBoxColumn.Name = "namestrDataGridViewTextBoxColumn";
+            this.namestrDataGridViewTextBoxColumn.ReadOnly = true;
+            this.namestrDataGridViewTextBoxColumn.Width = 65;
+            // 
+            // titlDataGridViewTextBoxColumn
+            // 
+            this.titlDataGridViewTextBoxColumn.DataPropertyName = "titl";
+            this.titlDataGridViewTextBoxColumn.HeaderText = "titl";
+            this.titlDataGridViewTextBoxColumn.Name = "titlDataGridViewTextBoxColumn";
+            this.titlDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // oldstunoDataGridViewTextBoxColumn
+            // 
+            this.oldstunoDataGridViewTextBoxColumn.DataPropertyName = "oldstuno";
+            this.oldstunoDataGridViewTextBoxColumn.HeaderText = "oldstuno";
+            this.oldstunoDataGridViewTextBoxColumn.Name = "oldstunoDataGridViewTextBoxColumn";
+            this.oldstunoDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // admyrDataGridViewTextBoxColumn
+            // 
+            this.admyrDataGridViewTextBoxColumn.DataPropertyName = "adm_yr";
+            this.admyrDataGridViewTextBoxColumn.HeaderText = "adm_yr";
+            this.admyrDataGridViewTextBoxColumn.Name = "admyrDataGridViewTextBoxColumn";
+            this.admyrDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // degr1DataGridViewTextBoxColumn
+            // 
+            this.degr1DataGridViewTextBoxColumn.DataPropertyName = "degr1";
+            this.degr1DataGridViewTextBoxColumn.HeaderText = "degr1";
+            this.degr1DataGridViewTextBoxColumn.Name = "degr1DataGridViewTextBoxColumn";
+            this.degr1DataGridViewTextBoxColumn.Visible = false;
+            // 
+            // degr2DataGridViewTextBoxColumn
+            // 
+            this.degr2DataGridViewTextBoxColumn.DataPropertyName = "degr2";
+            this.degr2DataGridViewTextBoxColumn.HeaderText = "degr2";
+            this.degr2DataGridViewTextBoxColumn.Name = "degr2DataGridViewTextBoxColumn";
+            this.degr2DataGridViewTextBoxColumn.Visible = false;
+            // 
+            // dobDataGridViewTextBoxColumn
+            // 
+            this.dobDataGridViewTextBoxColumn.DataPropertyName = "dob";
+            this.dobDataGridViewTextBoxColumn.HeaderText = "dob";
+            this.dobDataGridViewTextBoxColumn.Name = "dobDataGridViewTextBoxColumn";
+            this.dobDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // idDataGridViewTextBoxColumn
+            // 
+            this.idDataGridViewTextBoxColumn.DataPropertyName = "id";
+            this.idDataGridViewTextBoxColumn.HeaderText = "id";
+            this.idDataGridViewTextBoxColumn.Name = "idDataGridViewTextBoxColumn";
+            this.idDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // appstatDataGridViewTextBoxColumn
+            // 
+            this.appstatDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.appstatDataGridViewTextBoxColumn.DataPropertyName = "app_stat";
+            this.appstatDataGridViewTextBoxColumn.HeaderText = "Application Status";
+            this.appstatDataGridViewTextBoxColumn.Name = "appstatDataGridViewTextBoxColumn";
+            this.appstatDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // unwtptsDataGridViewTextBoxColumn
+            // 
+            this.unwtptsDataGridViewTextBoxColumn.DataPropertyName = "unwt_pts";
+            this.unwtptsDataGridViewTextBoxColumn.HeaderText = "unwt_pts";
+            this.unwtptsDataGridViewTextBoxColumn.Name = "unwtptsDataGridViewTextBoxColumn";
+            this.unwtptsDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // punwtptsDataGridViewTextBoxColumn
+            // 
+            this.punwtptsDataGridViewTextBoxColumn.DataPropertyName = "p_unwt_pts";
+            this.punwtptsDataGridViewTextBoxColumn.HeaderText = "p_unwt_pts";
+            this.punwtptsDataGridViewTextBoxColumn.Name = "punwtptsDataGridViewTextBoxColumn";
+            this.punwtptsDataGridViewTextBoxColumn.Visible = false;
+            // 
+            // offdteDataGridViewTextBoxColumn
+            // 
+            this.offdteDataGridViewTextBoxColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
+            this.offdteDataGridViewTextBoxColumn.DataPropertyName = "off_dte";
+            this.offdteDataGridViewTextBoxColumn.HeaderText = "Date Offered";
+            this.offdteDataGridViewTextBoxColumn.Name = "offdteDataGridViewTextBoxColumn";
+            this.offdteDataGridViewTextBoxColumn.ReadOnly = true;
+            this.offdteDataGridViewTextBoxColumn.Width = 93;
+            // 
+            // cn_results
+            // 
+            this.cn_results.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
+            this.cn_results.DataPropertyName = "matric_verified";
+            this.cn_results.HeaderText = "Results Checked";
+            this.cn_results.Name = "cn_results";
+            this.cn_results.Width = 85;
+            // 
+            // cn_fees
+            // 
+            this.cn_fees.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.DisplayedCells;
+            this.cn_fees.DataPropertyName = "fee_payer_verified";
+            this.cn_fees.HeaderText = "Fee Payer Info Recieved";
+            this.cn_fees.Name = "cn_fees";
+            this.cn_fees.Visible = false;
+            this.cn_fees.Width = 118;
+            // 
+            // cn_ref_no
+            // 
+            this.cn_ref_no.DataPropertyName = "ref_no";
+            this.cn_ref_no.HeaderText = "Ref No";
+            this.cn_ref_no.Name = "cn_ref_no";
+            this.cn_ref_no.Visible = false;
+            // 
+            // FormsRecieved
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.SystemColors.Window;
+            this.ClientSize = new System.Drawing.Size(791, 467);
+            this.Controls.Add(this.btnPrint);
+            this.Controls.Add(this.btn_close);
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.txt_surn);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.txt_reference);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.dg_list);
+            this.Controls.Add(this.textBox22);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            this.Name = "FormsRecieved";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "Forms Received Screen";
+            this.Load += new System.EventHandler(this.FormsRecieved_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.bs_forms)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dS_XADMDataSet)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dg_list)).EndInit();
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
+        }
+
+        #endregion
+
+        private System.Windows.Forms.TextBox textBox22;
+        private CustomDataGridView dg_list;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.TextBox txt_surn;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox txt_reference;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button btn_close;
+        private System.Windows.Forms.BindingSource bs_forms;
+        private NS_Admissions.StrongTypesNS.DS_XADMDataSet dS_XADMDataSet;
+        private System.Windows.Forms.Button btnPrint;
+        private System.Windows.Forms.DataGridViewTextBoxColumn cn_stuno;
+        private System.Windows.Forms.DataGridViewTextBoxColumn surnDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn namestrDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn titlDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn oldstunoDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn admyrDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn degr1DataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn degr2DataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dobDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn idDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn appstatDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn unwtptsDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn punwtptsDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn offdteDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn cn_results;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn cn_fees;
+        private System.Windows.Forms.DataGridViewTextBoxColumn cn_ref_no;
+    }
+}

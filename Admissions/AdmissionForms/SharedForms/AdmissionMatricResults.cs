@@ -1,0 +1,758 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using RhodesWizard;
+using Utilities;
+using NS_Admissions.StrongTypesNS;
+using Admissions.Utilities;
+using NS_System.StrongTypesNS;
+using Admissions.UtilityScreens;
+using System.IO;
+
+namespace Admissions.AdmissionForms
+{
+    public partial class AdmissionMatricResults : UserControl, IWizard
+    {
+        #region Local Variables
+
+        DS_MATRIC_SUBJDataSet ds_matric_subj;
+        DS_ADM_STUDataSet ds_adm_stu;
+        DataView dvMatricSubjects;
+        bool isSubjUpdate, matricWizard;
+        ds_genDataSet ds_matric_body;
+
+
+        #endregion
+
+        #region Constructors
+
+        public AdmissionMatricResults(bool matricWizard)
+        {
+            InitializeComponent();
+
+
+            this.matricWizard = matricWizard;
+            dgvMatricSubjects.AutoGenerateColumns = false;
+            cSubjGrade.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            cProvSymbol.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            cFinalSymbol.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            cProvMark.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            cFinalMark.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+        }
+
+        #endregion
+
+        #region IWizard Members
+
+        public bool ShowView()
+        {
+            try
+            {
+                PopulateComboBoxes();
+                DisableUpdateMode();
+                PopulateStudentSubjects();
+                SetMatricResultsCapturingOptions();
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+            return true;
+        }
+
+        public bool Next()
+        {
+            try
+            {
+                if (!scSubjects.Panel2Collapsed)
+                {
+                    string msg = "The view is currently in Add/Update mode. You have to finish/cancel adding/updating subject before you go to the next view.";
+                    MessageBox.Show(msg, AdmissionConstants.MessageBoxCaption, MessageBoxButtons.OK, MessageBoxIcon.Warning); return false;
+                }
+
+                bsAdmStudent.EndEdit();
+
+                int app_type = (int)WizardEnvironment.State[AdmissionStateItems.ApplicationType];
+                bool tempsession = (bool)WizardEnvironment.State[AdmissionStateItems.ApplicationSession], declined, cont_update;
+                string declined_msg = string.Empty;
+                
+               
+                string temperror = Proxy.Admissions.Save_Matric_Subject_Details(Global.Global.FromWhere, app_type, tempsession, ref ds_adm_stu, Global.Global.admissions_view, Global.Global.IsGadra, "Points", out declined_msg, out cont_update);
+                if (!string.IsNullOrEmpty(temperror))
+                {
+                    MessageBox.Show(temperror, "Admissions", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    if (!temperror.StartsWith("HIGCE")) return false;
+                }
+
+                if (Global.Global.IsGadra == true)
+                {
+                    declined_msg = string.Empty;
+                    ds_adm_stu.TT_ADM[0].APP_STAT = "DE";
+                }
+
+                declined = string.IsNullOrEmpty(declined_msg) ? false : true;
+
+                if (!declined)
+                {
+                    //Use the already "declined" variable to skip subsequent views (but app here is not necessarily declined).
+                    if ((matricWizard && !cont_update)) declined = true;
+                }
+
+                Global.Global.ChangeShow = "Hide";
+
+                if (Global.Global.IsGadra == false)
+                {
+                    MatricPoints points = new MatricPoints(Global.Global.admissions_view, ds_adm_stu, declined_msg);
+                    points.ShowDialog();
+                }
+                
+
+                WizardEnvironment.State[AdmissionStateItems.AdmissionStudent] = ds_adm_stu;
+                WizardEnvironment.State[AdmissionStateItems.AppDeclined] = declined;
+                Global.Global.FromWhere = "";
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+                return false;
+            }
+            return true;
+        }
+
+        public void Back()
+        {
+
+        }
+
+        #endregion
+
+        #region Local Methods
+
+        void PopulateComboBoxes()
+        {
+            if (cbResultsType.Items.Count.Equals(0))
+            {
+                Item prov = new Item("Provisional", "P");
+                Item final = new Item("Final", "F");
+
+                List<Item> list = new List<Item>(new Item[] { prov, final });
+                cbResultsType.DataSource = list;
+            }
+
+            if (cbSubject.Items.Count.Equals(0))
+            {
+                ds_matric_subj = Proxy.Admissions.Get_Matric_Subjects();
+                dvMatricSubjects = new DataView(ds_matric_subj.TT_MATRIC_SUBJ);
+                // DataRowView newrow = dvMatricSubjects.AddNew();
+                // newrow["msubj_id"] = "XXXX";
+                // newrow["mb_code"] = "XXXX";
+                // newrow["msubj"] = "XXXX";
+                // newrow["matdesc"] = "Other";
+                // newrow["mgrade"] = "X";
+                // newrow.EndEdit();
+                dvMatricSubjects.Sort = "matdesc";
+                cbSubject.DataSource = dvMatricSubjects;
+            }
+
+            if (cbGrade.Items.Count.Equals(0))
+            {
+                ds_genDataSet ds_gen = Proxy.System.Get_Gen("TRUE", "MG");
+                for (int i = 0; i < ds_gen.TT_GEN.Count; i++)
+                {
+                    ds_gen.TT_GEN[i].descrip = ds_gen.TT_GEN[i].descrip.ToUpper();
+                }
+                cbGrade.DataSource = ds_gen.TT_GEN;
+            }
+            /*New dropdown for ticket #615982*/
+            if (cbMatricType.Items.Count.Equals(0))
+            {
+                ds_genDataSet ds_matric_type = Proxy.System.Get_Gen("TRUE", "MT");
+                cbMatricType.DataSource = ds_matric_type.TT_GEN;
+            }
+
+            if (cbMatricBody.Items.Count.Equals(0))
+            {
+                ds_matric_body = Proxy.System.Get_Gen("TRUE", "MB");
+                cbMatricBody.DataSource = ds_matric_body.TT_GEN;
+            }
+        }
+
+        void EnableUpdateMode()
+        {
+            scSubjects.Panel2Collapsed = false;
+            scSubjects.Panel1.Enabled = false;
+            btnChange.Enabled = false;
+
+            cbSubject.Focus();
+            cbSubject.SelectAll();
+            //cbSubject.SelectedIndex = -1;
+        }
+
+        void DisableUpdateMode()
+        {
+            btnAdd.Text = "Add";
+            btnCancel.Text = "Done";
+            ClearSubjectFields(true);
+
+            txtSubjCode.Enabled = cbSubject.Enabled = cbGrade.Enabled = true;
+            scSubjects.Panel2Collapsed = true;
+            scSubjects.Panel1.Enabled = true;
+            btnChange.Enabled = true;
+            isSubjUpdate = false;
+        }
+
+        void ClearSubjectFields(bool clearGrade)
+        {
+            if (clearGrade && cbGrade.Items.Count > 0) cbGrade.SelectedIndex = 0;
+            if (cbSubject.Items.Count > 0) cbSubject.SelectedIndex = 0;
+            txtProvSymbol.Text = txtFinalSymbol.Text = txt_descrip.Text = string.Empty;
+            txtProvMark.Text = txtFinalMark.Text = "0";
+        }
+
+        void PopulateStudentSubjects()
+        {
+            if (WizardEnvironment.State.ContainsKey(AdmissionStateItems.AdmissionStudent) && WizardEnvironment.State[AdmissionStateItems.AdmissionStudent] != null)
+            {
+                ds_adm_stu = (DS_ADM_STUDataSet)WizardEnvironment.State[AdmissionStateItems.AdmissionStudent];
+            }
+            else
+            {
+                ds_adm_stu = new DS_ADM_STUDataSet();
+            }
+            bsAdmStudent.DataSource = ds_adm_stu.TT_ADM_STU;
+            dgvMatricSubjects.DataSource = ds_adm_stu.TT_SMAT;
+
+            if (ds_adm_stu.TT_SMAT.Count > 0)
+            {
+                rbPost2008.Enabled = rbPrior2008.Enabled = false;
+                string temp_nsc = ds_adm_stu.TT_SMAT[0].GRADE;
+                if (temp_nsc.Equals("N")) rbPost2008.Checked = true;
+                else rbPrior2008.Checked = true;
+                if (ds_adm_stu.TT_SMAT[0].MARK.ToString() != "0") cbResultsType.SelectedIndex = 1;
+            }
+        }
+
+        bool IsValidMatricSubjectDetails()
+        {
+            errorProvider.Clear();
+            bool valid = true;
+
+            if (cbSubject.SelectedValue == null)
+            {
+                valid = false;
+                errorProvider.SetError(cbSubject, "You have to select subject from the list");
+            }
+
+            if (cbMatricType.SelectedValue == null)
+            {
+                valid = false;
+                errorProvider.SetError(cbMatricType, "You have to select matric type from the list.");
+            }
+
+            if (cbMatricBody.SelectedValue == null)
+            {
+                valid = false;
+                errorProvider.SetError(cbMatricBody, "You have to select matric body from the list.");
+            }
+
+
+            if (cbGrade.SelectedValue == null)
+            {
+                valid = false;
+                errorProvider.SetError(cbGrade, "You have to select grade from the list");
+            }
+
+            if (cbSubject.SelectedValue != null && cbSubject.SelectedValue.ToString().StartsWith("XXXX") && txt_descrip.Text == string.Empty)
+            {
+                valid = false;
+                errorProvider.SetError(txt_descrip, "Please enter a description");
+            }
+
+            if (!isSubjUpdate)
+            {
+                if (txtProvSymbol.Enabled && txtProvSymbol.Text.Trim().Equals(string.Empty))
+                {
+                    valid = false;
+                    errorProvider.SetError(txtProvSymbol, "Student symbol is required.");
+                }
+
+                if (txtFinalSymbol.Enabled && txtFinalSymbol.Text.Trim().Equals(string.Empty))
+                {
+                    valid = false;
+                    errorProvider.SetError(txtFinalSymbol, "Student symbol is required.");
+                }
+
+                if (txtProvMark.Enabled && txtProvMark.Text.Trim().Equals(string.Empty))
+                {
+                    valid = false;
+                    errorProvider.SetError(txtProvMark, "Student mark is required.");
+                }
+
+                if (txtFinalMark.Enabled && txtFinalMark.Text.Trim().Equals(string.Empty))
+                {
+                    valid = false;
+                    errorProvider.SetError(txtFinalMark, "Student mark is required.");
+                }
+            }
+            else
+            {
+                bool TwoSymbols = false;
+                bool OneSymbols = false;
+                bool TwoMarks = false;
+                bool OneMark = false;
+
+                if (txtFinalMark.Text.Trim().Equals("0")) txtFinalMark.Text = string.Empty;
+                if (txtProvMark.Text.Trim().Equals("0")) txtProvMark.Text = string.Empty;
+
+                if ((txtFinalMark.Text.Trim().Equals(string.Empty) | txtFinalMark.Text.Trim().Equals("0")) & (txtProvMark.Text.Trim().Equals(string.Empty) | txtProvMark.Text.Trim().Equals("0")) &
+                    txtFinalSymbol.Text.Trim().Equals(string.Empty) & txtProvSymbol.Text.Trim().Equals(string.Empty))
+                {
+                    valid = false;
+                    errorProvider.SetError(txtProvSymbol, "Student prov/final mark or symbol is required.");
+                }
+
+                if (!txtFinalMark.Text.Trim().Equals(string.Empty) & !txtProvMark.Text.Trim().Equals(string.Empty) & txtFinalSymbol.Text.Trim().Equals(string.Empty) & txtProvSymbol.Text.Trim().Equals(string.Empty)) TwoMarks = true;
+                if (txtFinalMark.Text.Trim().Equals(string.Empty) & txtProvMark.Text.Trim().Equals(string.Empty) & !txtFinalSymbol.Text.Trim().Equals(string.Empty) & !txtProvSymbol.Text.Trim().Equals(string.Empty)) TwoSymbols = true;
+                if ((!txtFinalMark.Text.Trim().Equals(string.Empty) | !txtProvMark.Text.Trim().Equals(string.Empty)) & (txtFinalSymbol.Text.Trim().Equals(string.Empty) & txtProvSymbol.Text.Trim().Equals(string.Empty))) OneMark = true;
+                if ((txtFinalMark.Text.Trim().Equals(string.Empty) & txtProvMark.Text.Trim().Equals(string.Empty)) & (!txtFinalSymbol.Text.Trim().Equals(string.Empty) | !txtProvSymbol.Text.Trim().Equals(string.Empty))) OneSymbols = true;
+
+                if (!TwoSymbols & !OneSymbols & !TwoMarks & !OneMark)
+                {
+                    valid = false;
+                    errorProvider.SetError(txtFinalMark, "Please check your marks for the subject.");
+                }
+
+
+            }
+
+            if (valid && !isSubjUpdate)
+            {
+                string subj = ds_matric_subj.TT_MATRIC_SUBJ[new BindingSource(ds_matric_subj, "TT_MATRIC_SUBJ").Find("MSUBJ_ID", cbSubject.SelectedValue.ToString())].MSUBJ;
+                string temperror = Proxy.Admissions.Validate_Matric_Subject(subj, cbGrade.SelectedValue.ToString(), ds_adm_stu);
+                if (!string.IsNullOrEmpty(temperror))
+                {
+                    valid = false;
+                    MessageBox.Show(temperror, "Admissions", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+
+            return valid;
+        }
+
+        void SetMatricResultsCapturingOptions()
+        {
+            if (isSubjUpdate == false)
+
+            {
+                if (cbResultsType.Text.Equals("Final"))
+                {
+                    txtProvMark.Enabled = txtProvSymbol.Enabled = false;
+                    txtFinalMark.Enabled = txtFinalSymbol.Enabled = true;
+
+                    if (rbPost2008.Checked)
+                    {
+                        txtFinalMark.Enabled = true;
+                        txtFinalSymbol.Enabled = false;
+                    }
+                    else
+                    {
+                        txtFinalMark.Enabled = false;
+                        txtFinalSymbol.Enabled = true;
+                    }
+                }
+                else
+                {
+                    txtProvMark.Enabled = txtProvSymbol.Enabled = true;
+                    txtFinalMark.Enabled = txtFinalSymbol.Enabled = false;
+
+                    if (rbPost2008.Checked)
+                    {
+                        txtProvMark.Enabled = true;
+                        txtProvSymbol.Enabled = false;
+                    }
+                    else
+                    {
+                        txtProvMark.Enabled = false;
+                        txtProvSymbol.Enabled = true;
+                    }
+                }
+            }
+        }
+
+        void SetInputFocus()
+        {
+            gbMatricSubjects.Focus();
+            scSubjects.Panel2.Focus();
+            if (txtFinalMark.Enabled) { txtFinalMark.Focus(); txtFinalMark.SelectAll(); }
+            else if (txtProvMark.Enabled) { txtProvMark.Focus(); txtProvMark.SelectAll(); }
+            else if (txtFinalSymbol.Enabled) { txtFinalSymbol.Focus(); txtFinalSymbol.SelectAll(); }
+            else if (txtProvSymbol.Enabled) { txtProvSymbol.Focus(); txtProvSymbol.SelectAll(); }
+        }
+
+        #endregion
+
+        #region Button Events
+
+        private void btnNew_Click(object sender, EventArgs e)
+        {
+            isSubjUpdate = false;
+            SetMatricResultsCapturingOptions();
+            if (rbPost2008.Checked) cbGrade.SelectedValue = "N";
+            EnableUpdateMode();
+        }
+
+        private void btnRemove_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string msg = string.Empty;
+                if (dgvMatricSubjects.SelectedRows.Count.Equals(0))
+                {
+                    msg = "There is no selected subject do remove.";
+                    MessageBox.Show(msg, AdmissionConstants.MessageBoxCaption, MessageBoxButtons.OK, MessageBoxIcon.Warning); return;
+                }
+
+                msg = "Are you sure you want to delete the selected subject.";
+                if (!MessageBox.Show(msg, "Admissions", MessageBoxButtons.YesNo, MessageBoxIcon.Question).Equals(DialogResult.Yes)) return;
+
+                string subj = dgvMatricSubjects.SelectedRows[0].Cells[cSubjCode.Name].Value.ToString();
+                string grade = dgvMatricSubjects.SelectedRows[0].Cells[cSubjGrade.Name].Value.ToString();
+
+                int index = -1;
+                foreach (DS_ADM_STUDataSet.TT_SMATRow stuMatricSubj in ds_adm_stu.TT_SMAT)
+                {
+                    index++;
+                    if (subj.Equals(stuMatricSubj.SUBJ) && grade.Equals(stuMatricSubj.GRADE)) break;
+                }
+                ds_adm_stu.TT_SMAT.RemoveTT_SMATRow(ds_adm_stu.TT_SMAT[index]);
+
+                if (ds_adm_stu.TT_SMAT.Rows.Count == 0) rbPost2008.Enabled = rbPrior2008.Enabled = true;
+
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+        }
+
+        private void btnAdd_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!IsValidMatricSubjectDetails()) return;
+
+                if (!isSubjUpdate)
+                {
+                    DS_ADM_STUDataSet.TT_SMATRow subject = ds_adm_stu.TT_SMAT.NewTT_SMATRow();
+                    UpdateMatricSubjectFields(subject);
+                    ds_adm_stu.TT_SMAT.AddTT_SMATRow(subject);
+
+                    ClearSubjectFields(false);
+
+                    cbSubject.Focus();
+                    cbSubject.SelectAll();
+                    cbSubject.SelectedIndex = -1;
+                    txtSubjCode.Text = "";
+                }
+                else
+                {
+                    //string subj_id = dgvMatricSubjects.SelectedRows[0].Cells[cSubjId.Name].Value.ToString();
+                    int index = new BindingSource(ds_adm_stu, "TT_SMAT").Find("SUBJ_ID", cbSubject.SelectedValue.ToString());
+                    if (index < 0) throw new ApplicationException("Selected subject not found in subject list");
+
+                    DS_ADM_STUDataSet.TT_SMATRow subject = ds_adm_stu.TT_SMAT[index];
+                    UpdateMatricSubjectFields(subject);
+
+                    DisableUpdateMode();
+                }
+
+                //DisableUpdateMode();
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+        }
+
+        void UpdateMatricSubjectFields(DS_ADM_STUDataSet.TT_SMATRow subject)
+        {
+            subject.SUBJ_ID = cbSubject.SelectedValue.ToString();
+            subject.SUBJ = ds_matric_subj.TT_MATRIC_SUBJ[new BindingSource(ds_matric_subj, "TT_MATRIC_SUBJ").Find("MSUBJ_ID", subject.SUBJ_ID)].MSUBJ;
+            if (subject.SUBJ_ID.StartsWith("XXXX")) subject.MATDESC = txt_descrip.Text.ToUpper();
+            else subject.MATDESC = cbSubject.Text.ToUpper();
+            subject.GRADE = cbGrade.SelectedValue.ToString();
+            subject.PROV_SYMB = txtProvSymbol.Text.Trim();
+            subject.SYMB = txtFinalSymbol.Text.Trim();
+            subject.PROV_MARK = string.IsNullOrEmpty(txtProvMark.Text.Trim()) ? 0 : int.Parse(txtProvMark.Text.Trim());
+            subject.MARK = string.IsNullOrEmpty(txtFinalMark.Text.Trim()) ? 0 : int.Parse(txtFinalMark.Text.Trim());
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            DisableUpdateMode();
+            Global.Global.FromWhere = "";
+        }
+
+        private void btnChange_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                //string matType = cbMatricType.SelectedValue == null ? ds_adm_stu.TT_ADM_STU[0].MAT_TYPE : cbMatricType.SelectedValue.ToString();
+                //string resType = cbResultsType.Text.Equals(string.Empty) ? "Provisional" : cbResultsType.Text;
+                //bool changeMatType = dgvMatricSubjects.RowscbResultsType.Count > 0 ? false : true;
+
+                //MatricSubjOptions subjOptions = new MatricSubjOptions(ds_matric_type, matType, resType, changeMatType);
+                //if (subjOptions.ShowDialog().Equals(DialogResult.OK))
+                //{
+                //    SetMatricResultsCapturingOptions(subjOptions.MatricType, subjOptions.ResultType);
+                //}
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+        }
+
+        #endregion
+
+        #region DataGridView Events
+
+        void dgvMatricSubjects_CellDoubleClick(object sender, System.Windows.Forms.DataGridViewCellEventArgs e)
+        {
+            try
+            {
+                if (dgvMatricSubjects.SelectedRows.Count.Equals(0))
+                {
+                    string msg = "There is not selected subject to update";
+                    MessageBox.Show(msg, "Admissions", MessageBoxButtons.OK, MessageBoxIcon.Warning); return;
+                }
+
+                string subj_id = dgvMatricSubjects.SelectedRows[0].Cells[cSubjId.Name].Value.ToString();
+                int index = new BindingSource(ds_adm_stu, "TT_SMAT").Find("SUBJ_ID", subj_id);
+                if (index < 0) throw new ApplicationException("Selected subject not found in subject list");
+
+                DS_ADM_STUDataSet.TT_SMATRow subject = ds_adm_stu.TT_SMAT[index];
+                cbGrade.SelectedValue = subject.GRADE;
+
+                txtProvSymbol.Text = subject.PROV_SYMB;
+                txtFinalSymbol.Text = subject.SYMB;
+                txtProvMark.Text = subject.PROV_MARK.ToString();
+                txtFinalMark.Text = subject.MARK.ToString();
+                txt_descrip.Text = subject.MATDESC;
+                txtSubjCode.Text = subject.SUBJ_ID;
+                cbSubject.SelectedValue = subject.SUBJ_ID;
+
+                txtSubjCode.Enabled = cbSubject.Enabled = cbGrade.Enabled = false;
+                btnAdd.Text = "Update";
+                btnCancel.Text = "Cancel";
+                isSubjUpdate = true;
+
+                txtProvMark.Enabled = txtProvSymbol.Enabled = true;
+                txtFinalMark.Enabled = txtFinalSymbol.Enabled = true;
+
+                EnableUpdateMode();
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+        }
+
+        void dgvMatricSubjects_DataBindingComplete(object sender, System.Windows.Forms.DataGridViewBindingCompleteEventArgs e)
+        {
+            dgvMatricSubjects.ClearSelection();
+        }
+
+        #endregion
+
+        #region TextBox Events
+
+        void txtProvMark_Leave(object sender, System.EventArgs e)
+        {
+            if (txtProvMark.Text.Trim().Equals(string.Empty)) txtProvMark.Text = "0";
+        }
+
+        void txtFinalMark_Leave(object sender, System.EventArgs e)
+        {
+            if (txtFinalMark.Text.Trim().Equals(string.Empty)) txtFinalMark.Text = "0";
+        }
+
+        void txtProvSymbol_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar)) e.Handled = true;
+        }
+
+        void txtFinalSymbol_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
+        {
+            if (!char.IsControl(e.KeyChar) && !char.IsLetter(e.KeyChar)) e.Handled = true;
+        }
+
+        #endregion
+
+        #region ComboBox Events
+
+        private void cbResultsType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SetMatricResultsCapturingOptions();
+            SetInputFocus();
+        }
+
+        private void cbGrade_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                errorProvider.Clear();
+                if (cbGrade.SelectedValue != null)
+                {
+                    if (ds_matric_subj == null) return;
+
+                    DataView dvMatricSubjects = new DataView(ds_matric_subj.TT_MATRIC_SUBJ);
+                    dvMatricSubjects.RowFilter = string.Format("MGRADE = '{0}'", cbGrade.SelectedValue);
+                    dvMatricSubjects.Sort = "matdesc";
+                    cbSubject.DataSource = dvMatricSubjects;
+                }
+                else cbSubject.DataSource = null;
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+        }
+
+        #endregion
+
+        #region RadioButton Events
+
+        private void rbPost2008_CheckedChanged(object sender, EventArgs e)
+        {
+            SetMatricResultsCapturingOptions();
+            SetInputFocus();
+        }
+
+        #endregion
+
+        #region Control Focus
+
+        void cbMatricBody_GotFocus(object sender, System.EventArgs e)
+        {
+            cbMatricBody.SelectAll();
+        }
+
+        void txtFinalMark_GotFocus(object sender, System.EventArgs e)
+        {
+            txtFinalMark.SelectAll();
+        }
+
+        void txtProvMark_GotFocus(object sender, System.EventArgs e)
+        {
+            txtProvMark.SelectAll();
+        }
+
+        void txtFinalSymbol_GotFocus(object sender, System.EventArgs e)
+        {
+            txtFinalSymbol.SelectAll();
+        }
+
+        void txtProvSymbol_GotFocus(object sender, System.EventArgs e)
+        {
+            txtProvSymbol.SelectAll();
+        }
+
+        void txt_descrip_GotFocus(object sender, System.EventArgs e)
+        {
+            txt_descrip.SelectAll();
+        }
+
+        #endregion
+
+        private void cbSubject_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cbSubject.SelectedValue != null && cbSubject.SelectedValue.ToString().StartsWith("XXXX"))
+            {
+                lbl_descrip.Visible = true;
+                txt_descrip.Visible = true;
+                txtSubjCode.Text = cbSubject.SelectedValue.ToString();
+            }
+            else
+            {
+                lbl_descrip.Visible = false;
+                txt_descrip.Visible = false;
+                txtSubjCode.Text = "";
+            }
+
+
+        }
+
+        private void AdmissionMatricResults_Load(object sender, EventArgs e)
+        {
+            bool docfound = Proxy.System.CHECK_DOCUMENT("stuno", Global.Global.tempstu, "MR", "undergrad");
+            btn_results.Visible = docfound;
+        }
+
+        private void btn_results_Click(object sender, EventArgs e)
+        {
+            string doctype = string.Empty;
+            string apptype = "undergrad";
+
+            int i = 0;
+            do
+            {
+                i++;
+                string docname = string.Empty;
+                doctype = "MR";
+                if (i > 1) doctype = doctype + (i - 1).ToString();
+
+
+                NS_System.StrongTypesNS.DS_DOCDataSet ds_doc = Proxy.System.Get_Documents("stuno", Global.Global.tempstu, doctype, apptype, out docname);
+                if (docname != string.Empty) DMU.DisplayImages.display_picture(docname, ds_doc);
+            } while (i < 8);
+
+
+        }
+
+        private void txtSubjCode_KeyDown(object sender, KeyEventArgs e)
+        {
+            if ((e.KeyCode.Equals(Keys.Enter)) && (txtSubjCode.Text != string.Empty)) get_subject();
+
+        }
+
+        private void get_subject()
+        {
+            if (txtSubjCode.Text != string.Empty && dvMatricSubjects != null)
+            {
+                cbSubject.SelectedValue = txtSubjCode.Text.ToString() + "-" + cbGrade.SelectedValue.ToString();
+                if (cbSubject.SelectedIndex == -1)
+                {
+                    MessageBox.Show("Subject code " + txtSubjCode.Text.ToString() + " not on the list.", "Not Found", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    txtSubjCode.Text = string.Empty;
+                }
+            }
+        }
+
+        private void txtSubjCode_TextChanged(object sender, EventArgs e)
+        {
+            // txtSubjCode.Text = txtSubjCode.Text.ToUpper();
+        }
+
+        private void cbMatricType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            errorProvider.SetError(cbMatricType, string.Empty);
+        }
+
+        private void cbMatricBody_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            errorProvider.SetError(cbMatricBody, string.Empty);
+        }
+
+        private void dgvMatricSubjects_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+    }
+}

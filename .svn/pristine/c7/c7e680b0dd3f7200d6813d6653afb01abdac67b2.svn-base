@@ -1,0 +1,154 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using Utilities;
+
+namespace Admissions.AdmissionForms
+{
+    public partial class XADMList : Form
+    {
+
+        public string MenuOption = "";
+        public event EventHandler SelectOnlineApplication;
+        string ref_no = string.Empty;
+        string appname = string.Empty;
+        
+
+        public XADMList()
+        {
+            InitializeComponent();
+        }
+
+        private void XADMList_Load(object sender, EventArgs e)
+        {
+            Dictionary<string, string> userCache = new Dictionary<string, string>
+                {
+                  {"UG Applications", "U"},
+                  {"Honours Applications", "E"},                  
+                  {"Masters Applications", "F"},
+                  {"PhD Applications", "H"}
+                };
+            cb_acad_level.DataSource = new BindingSource(userCache, null);
+            cb_acad_level.DisplayMember = "Key";
+            cb_acad_level.ValueMember = "Value";
+            cb_acad_level.SelectedIndex = 0;
+
+            refresh();
+        }
+
+        private void dataGridView1_DoubleClick(object sender, EventArgs e)
+        {
+            if (dg_xadm.SelectedRows.Count == 1)
+            {
+                Global.Global.adm_yr = Int32.Parse(dg_xadm.SelectedCells[6].Value.ToString());
+                Global.Global.oldstuno = dg_xadm.SelectedCells[5].Value.ToString();
+                Global.Global.ref_no = dg_xadm.SelectedCells[0].Value.ToString();
+                Global.Global.app_stat = cb_acad_level.SelectedValue.ToString();
+                EventHandler doubleClickHandler = this.SelectOnlineApplication;
+                doubleClickHandler(sender, e);
+                
+            }
+        }
+
+        private void btn_refresh_Click(object sender, EventArgs e)
+        {
+            refresh();
+        }
+
+        public void refresh()
+        {
+
+            try 
+            {
+                string saplev = cb_acad_level.SelectedValue.ToString();
+                bool acadstat = true;
+                if (saplev != "U") acadstat = false;
+                string tempstatus = string.Empty;
+                NS_Admissions.StrongTypesNS.DS_XADMDataSet ds_xadm = Proxy.Admissions.GET_XADM(acadstat, saplev, out tempstatus);
+                lbl_status.Text = tempstatus;
+                bs_xadm.DataSource = ds_xadm.tt_xadm;
+                lbl_updated.Text = "Last Updated: " + DateTime.Now.ToLongDateString() + " - " + DateTime.Now.ToLongTimeString();
+                lbl_total.Text = "Total Records: " + ds_xadm.tt_xadm.Rows.Count.ToString();
+
+
+             }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+        
+
+        }
+
+        private void dg_xadm_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                dg_xadm.ClearSelection();
+                ContextMenu m = new ContextMenu();
+
+                int currentMouseOverRow = dg_xadm.HitTest(e.X, e.Y).RowIndex;
+
+                if (currentMouseOverRow >= 0)
+                {
+                    dg_xadm.Rows[currentMouseOverRow].Selected = true;
+                    appname = (string.Format("{0} - {2} {1}", dg_xadm.SelectedCells[0].Value.ToString(), dg_xadm.SelectedCells[1].Value.ToString(), dg_xadm.SelectedCells[3].Value.ToString()));
+                    ref_no = dg_xadm.SelectedCells[0].Value.ToString();
+                    
+                    m.MenuItems.Add(appname);
+                    m.MenuItems.Add("-");
+                    MenuItem mi = new MenuItem("Hard Copy Submitted");
+                    mi.Click += menu_Click;
+                    m.MenuItems.Add(mi);
+                   
+                    //Add View Online Application option
+                    MenuItem vo = new MenuItem("View Online Application");
+                    vo.Click += vo_Click; 
+                    m.MenuItems.Add(vo);
+
+                    m.Show(dg_xadm, new Point(e.X, e.Y));
+                }                
+            }
+        }
+
+        void menu_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Are you sure you want to discard this application due to a hard copy having been submitted?", appname, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                Proxy.Admissions.hardcopy_submitted(ref_no);
+                refresh();
+            }
+        }
+
+        void vo_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string regguid = Proxy.Admissions.update_xadm_regguid(ref_no);
+                if (!regguid.Contains("Error"))
+                {
+                    OnlineApplication frmOnlineApp = new OnlineApplication(ref_no, cb_acad_level.SelectedValue.ToString(),regguid);
+                    frmOnlineApp.Show();
+                }
+                else MessageBox.Show(regguid, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                refresh();
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+        }
+
+        private void cb_acad_level_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            refresh();
+        }
+       
+    }
+}

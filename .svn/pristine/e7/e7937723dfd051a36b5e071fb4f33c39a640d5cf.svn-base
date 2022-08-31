@@ -1,0 +1,419 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using RhodesWizard;
+using Utilities;
+using NS_System.StrongTypesNS;
+using NS_Admissions.StrongTypesNS;
+using Admissions.Utilities;
+using Admissions.EventArguments;
+using System.Globalization;
+using System.Threading;
+
+namespace Admissions.AdmissionForms
+{
+    public partial class StudentPersonalDetails : UserControl, IWizard
+    {
+        DS_ADM_STUDataSet ds_adm_stu;
+        string ref_no;
+        public event EventHandler<AdmissionStudentEventArgs> AdmissionStudentCreated;
+
+        public StudentPersonalDetails(string ref_no)
+        {
+            InitializeComponent();
+            this.ref_no = ref_no;
+        }
+
+        #region IWizard Members
+
+        public bool ShowView()
+        {
+            try
+            {
+                PopulateComboBoxes();
+                PopulateStudentDetails();
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+            return true;
+        }
+
+        public bool Next()
+        {
+            try
+            {
+                bsAdmStudent.EndEdit();
+                
+                if (!IsValidPersonalDetails()) return false;
+
+                int app_type = (int)WizardEnvironment.State[AdmissionStateItems.ApplicationType];
+                bool tempsession = (bool)WizardEnvironment.State[AdmissionStateItems.ApplicationSession];
+
+                string temperror, tempwarning, newstuno;
+
+
+
+
+                CultureInfo ci = new CultureInfo(CultureInfo.CurrentCulture.Name);
+
+                ci.DateTimeFormat.ShortDatePattern = "dd'/'MM'/'yyyy";
+
+                ci.DateTimeFormat.LongTimePattern = "hh':'mm tt";
+
+                Thread.CurrentThread.CurrentCulture = ci;
+
+                Thread.CurrentThread.CurrentUICulture = ci;
+                string tempdte = dtpDOB.Value.ToString();          
+
+                DateTime dt = DateTime.Parse(tempdte);
+
+
+
+                //dtpDOB.Value.ToString("dd/MM/yyyy")
+
+                //Validate South African Id number
+                tempwarning = Proxy.Admissions.Validate_South_African_Id_Number(txtID.Text.Trim(), Global.Global.tempstu, dt.ToShortDateString(), cbGender.Text[0].ToString(), cbCitizen.SelectedValue.ToString(), out temperror);
+                if (!string.IsNullOrEmpty(temperror))
+                {
+                    MessageBox.Show(temperror, "Admissions", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+                else if (!string.IsNullOrEmpty(tempwarning))
+                {
+                    tempwarning = string.Concat(tempwarning, Environment.NewLine, Environment.NewLine, "Do you want to continue anyway?");
+                    if (!MessageBox.Show(tempwarning, "Admissions", MessageBoxButtons.YesNo, MessageBoxIcon.Warning).Equals(DialogResult.Yes)) return false;
+                    tempwarning = string.Empty;
+                }
+
+                if (Global.Global.admissions_view)
+                {
+                    //Only do this for admissions
+                    temperror = Proxy.Admissions.Validate_Student_Personal_Details(app_type, tempsession, ds_adm_stu, out tempwarning);
+                    if (!string.IsNullOrEmpty(temperror))
+                    {
+                        MessageBox.Show(temperror, "Admissions", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return false;
+                    }
+                    else if (!string.IsNullOrEmpty(tempwarning))
+                    {
+                        tempwarning = string.Concat(tempwarning, Environment.NewLine, Environment.NewLine, "Do you want to continue?");
+                        if (!MessageBox.Show(tempwarning, "Admissions", MessageBoxButtons.YesNo, MessageBoxIcon.Question).Equals(DialogResult.Yes)) return false;
+                    }
+                }
+
+                temperror = string.Empty;
+                string tempwarn = string.Empty;
+                bool new_stuno = false;
+                temperror = Proxy.Admissions.Automatic_Entry_of_Student_Number(app_type, tempsession, Global.Global.admissions_view, ref ds_adm_stu, out newstuno, out new_stuno, out tempwarn);
+
+                if (!string.IsNullOrEmpty(tempwarn))
+                {
+                    MessageBox.Show(tempwarn, "Admissions", MessageBoxButtons.OK, MessageBoxIcon.Warning);                    
+                }
+
+                if (!string.IsNullOrEmpty(temperror))
+                {
+                    MessageBox.Show(temperror, "Admissions", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+
+                temperror = Proxy.Admissions.Validate_Additional_Personal_Details(Global.Global.FromWhere, app_type, tempsession, Global.Global.admissions_view, ref ds_adm_stu);
+                if (!string.IsNullOrEmpty(temperror))
+                {
+                    MessageBox.Show(temperror, "Admissions", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+
+                if (!string.IsNullOrEmpty(newstuno))
+                {
+                    if (new_stuno)
+                    {
+                        string msg = string.Concat("New student number : ", newstuno);
+                        MessageBox.Show(msg, "Admissions", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+
+                    //Re-run "Validate Previous Rhodes number to also get Admissions info
+                    DS_VALIDATIONDataSet ds_validations;
+                    
+                    
+                    ds_adm_stu = Proxy.Admissions.Validate_Previous_Rhodes_Number(newstuno, app_type, tempsession, Global.Global.admissions_view, ref_no, out ds_validations);
+                    if (ds_validations.TT_VALIDATION.Rows.Count > 0)
+                    {
+                        bool stop_msg = false;
+                        StringBuilder msgBuilder = new StringBuilder(string.Concat("The following validations failed for the given student number:", Environment.NewLine));
+                        foreach (DS_VALIDATIONDataSet.TT_VALIDATIONRow validation in ds_validations.TT_VALIDATION)
+                        {
+                            msgBuilder.Append(string.Concat(Environment.NewLine, validation.VAL_MSG));
+                            if (validation.IS_STOP) stop_msg = true;
+                        }
+
+                        if (stop_msg)
+                        {
+                            MessageBox.Show(msgBuilder.ToString(), AdmissionConstants.MessageBoxCaption, MessageBoxButtons.OK, MessageBoxIcon.Warning); return false;
+                        }
+                        else
+                        {
+                            msgBuilder.Append(string.Concat(Environment.NewLine, Environment.NewLine, "Do you want to continue anyway?"));
+                            if (!MessageBox.Show(msgBuilder.ToString(), AdmissionConstants.MessageBoxCaption, MessageBoxButtons.YesNo, MessageBoxIcon.Question).Equals(DialogResult.Yes)) return false;
+                        }
+                    }
+
+                    if (AdmissionStudentCreated != null)
+                    {
+                        AdmissionStudentCreated(this, new AdmissionStudentEventArgs(newstuno));
+                    }
+                }
+
+                WizardEnvironment.State[AdmissionStateItems.AdmissionStudent] = ds_adm_stu;
+
+                Global.Global.FromWhere = "";
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+            return true;
+        }
+
+        public void Back()
+        {
+            
+        }
+
+        #endregion
+
+        #region Local Methods
+
+        void PopulateComboBoxes()
+        {
+            if (cbStuTitle.Items.Count.Equals(0))
+            {
+                DS_TITLEDataSet ds_title = Proxy.Admissions.Get_Title_Lookup();
+                cbStuTitle.DataSource = ds_title.TT_TITLE;
+            }
+
+            if (cbGender.Items.Count.Equals(0))
+            {
+                List<BooleanStringBinding> gender = new List<BooleanStringBinding>();
+                gender.Add(new BooleanStringBinding(true, "Male"));
+                gender.Add(new BooleanStringBinding(false, "Female"));
+                cbGender.DataSource = gender;
+            }
+
+            if (cbRace.Items.Count.Equals(0))
+            {
+                ds_genDataSet ds_race = Proxy.System.Get_Gen("TRUE", "RA");
+                cbRace.DataSource = ds_race.TT_GEN;
+            }
+
+            if (cbLanguage.Items.Count.Equals(0))
+            {
+                ds_genDataSet ds_lang = Proxy.System.Get_Gen("TRUE", "LA");
+                cbLanguage.DataSource = ds_lang.TT_GEN;
+            }
+
+            if (cbCitizen.Items.Count.Equals(0))
+            {
+                ds_genDataSet ds_citizen = Proxy.System.Get_Gen("TRUE", "CI");
+                cbCitizen.DataSource = ds_citizen.TT_GEN;
+            }
+
+            if (cbNationality.Items.Count.Equals(0))
+            {
+                ds_natDataSet ds_nationality = Proxy.System.get_nat();
+                cbNationality.DataSource = ds_nationality.tt_nat;
+            }
+
+            if (cbDisability.Items.Count.Equals(0))
+            {
+                ds_genDataSet ds_disability = Proxy.System.Get_Gen("TRUE", "DI");
+                ds_genDataSet.TT_GENRow gen = ds_disability.TT_GEN.NewTT_GENRow();
+                gen.code = ""; gen.descrip = "<None>"; gen.type = "DI";
+                ds_disability.TT_GEN.Rows.InsertAt(gen, 0);
+                cbDisability.DataSource = ds_disability.TT_GEN;
+            }
+        }
+
+        void PopulateStudentDetails()
+        {
+            if (WizardEnvironment.State.ContainsKey(AdmissionStateItems.AdmissionStudent) && WizardEnvironment.State[AdmissionStateItems.AdmissionStudent] != null)
+            {
+                ds_adm_stu = (DS_ADM_STUDataSet)WizardEnvironment.State[AdmissionStateItems.AdmissionStudent];
+            }
+            else
+            {
+                ds_adm_stu = new DS_ADM_STUDataSet();
+                int app_type = 1;
+                if (WizardEnvironment.State.ContainsKey(AdmissionStateItems.AdmissionStudent))
+                {
+                    app_type = (int)WizardEnvironment.State[AdmissionStateItems.ApplicationType];
+                }
+                string temperror = Proxy.Admissions.Create_Default_Admission_Student(app_type, ref ds_adm_stu);
+                if (!string.IsNullOrEmpty(temperror))
+                { MessageBox.Show(temperror, "Admissions", MessageBoxButtons.OK, MessageBoxIcon.Warning); }
+            }
+
+            bsAdmStudent.DataSource = ds_adm_stu.TT_ADM_STU;
+        }
+
+
+        bool IsValidPersonalDetails()
+        {
+            bool valid = true;
+            errorProvider.Clear();
+
+            if (cbGender.SelectedValue == null)
+            {
+                valid = false;
+                errorProvider.SetError(cbGender, "Gender is required.");
+            }
+
+            if (cbRace.SelectedValue == null)
+            {
+                valid = false;
+                errorProvider.SetError(cbRace, "Select race from the list.");
+            }
+
+            if (cbLanguage.SelectedValue == null)
+            {
+                valid = false;
+                errorProvider.SetError(cbLanguage, "Select language from the list.");
+            }
+
+            if (cbCitizen.SelectedValue == null)
+            {
+                valid = false;
+                errorProvider.SetError(cbCitizen, "Select citizen from the list.");
+            }
+
+            if (cbNationality.SelectedValue == null)
+            {
+                valid = false;
+                errorProvider.SetError(cbNationality, "Select nationality from the list.");
+            }
+
+            if (cbDisability.SelectedValue == null)
+            {
+                valid = false;
+                errorProvider.SetError(cbDisability, "Select disability from the list.");
+            }
+
+            if (cbStuTitle.SelectedValue == null)
+            {
+                valid = false;
+                errorProvider.SetError(cbStuTitle, "Select student title from the list.");
+            }
+
+            if (txtSurname.Text.Trim().Equals(string.Empty))
+            {
+                valid = false;
+                errorProvider.SetError(txtSurname, "Student surname is required.");
+            }
+
+            if (dtpDOB.Value == null)
+            {
+                valid = false;
+                errorProvider.SetError(dtpDOB, "Date of birth is rquired.");
+            }
+
+            return valid;
+        }
+
+        #endregion
+
+        #region Clear Error Provider
+
+        private void cbRace_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            errorProvider.SetError(cbRace, string.Empty);
+        }
+
+        private void cbLanguage_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            errorProvider.SetError(cbLanguage, string.Empty);
+        }
+
+        private void cbCitizen_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            errorProvider.SetError(cbCitizen, string.Empty);
+        }
+
+        private void cbNationality_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            errorProvider.SetError(cbNationality, string.Empty);
+        }
+
+        private void cbDisability_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            errorProvider.SetError(cbDisability, string.Empty);
+        }
+
+        private void cbStuTitle_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            errorProvider.SetError(cbStuTitle, string.Empty);
+        }
+
+        private void txtSurname_TextChanged(object sender, EventArgs e)
+        {
+            errorProvider.SetError(txtSurname, string.Empty);
+        }
+
+        private void dtpDOB_ValueChanged(object sender, EventArgs e)
+        {
+            errorProvider.SetError(dtpDOB, string.Empty);
+        }
+
+        private void cbGender_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            errorProvider.SetError(cbGender, string.Empty);
+        }
+
+        #endregion
+
+        #region Control Focus Handlers
+
+        void cbNationality_GotFocus(object sender, System.EventArgs e)
+        {
+            cbNationality.SelectAll();
+        }
+
+        void txtInitials_GotFocus(object sender, System.EventArgs e)
+        {
+            txtInitials.SelectAll();
+        }
+
+        void txtID_GotFocus(object sender, System.EventArgs e)
+        {
+            txtID.SelectAll();
+        }
+
+        void txtMaidenName_GotFocus(object sender, System.EventArgs e)
+        {
+            txtMaidenName.SelectAll();
+        }
+
+        void txtOtherNames_GotFocus(object sender, System.EventArgs e)
+        {
+            txtOtherNames.SelectAll();
+        }
+
+        void txtFirstName_GotFocus(object sender, System.EventArgs e)
+        {
+            txtFirstName.SelectAll();
+        }
+
+        void txtSurname_GotFocus(object sender, System.EventArgs e)
+        {
+            txtSurname.SelectAll();
+        }
+
+        #endregion
+    }
+}

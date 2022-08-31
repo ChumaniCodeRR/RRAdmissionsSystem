@@ -1,0 +1,214 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using RhodesWizard;
+using Utilities;
+using NS_System.StrongTypesNS;
+using NS_Admissions.StrongTypesNS;
+using Admissions.Utilities;
+
+namespace Admissions.AdmissionForms
+{
+    public partial class SchoolHistory : UserControl, IWizard
+    {
+        DS_ADM_STUDataSet ds_adm_stu;
+        DS_SCHOOLDataSet ds_schools;
+
+        public SchoolHistory()
+        {
+            InitializeComponent();
+        }
+
+        #region IWizard Members
+
+        public bool ShowView()
+        {
+            try
+            {
+                if (WizardEnvironment.State.ContainsKey(AdmissionStateItems.AppDeclined))
+                {
+                    bool declined = (bool)WizardEnvironment.State[AdmissionStateItems.AppDeclined];
+                    if (declined) return false;
+                }
+
+                LoadComboBoxes();
+                LoadStudentDetails();
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.HonoursSys, ex);
+            }
+            return true;
+        }
+
+        public bool Next()
+        {
+            try
+            {
+                if (!IsValidShoolHistoryDetails()) return false;
+                string temperror = Proxy.Admissions.Save_Previous_School_History(ref ds_adm_stu);
+                if (!string.IsNullOrEmpty(temperror))
+                {
+                    MessageBox.Show(temperror, "Admissions", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+                WizardEnvironment.State[AdmissionStateItems.AdmissionStudent] = ds_adm_stu;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.HonoursSys, ex);
+                return false;
+            }
+        }
+
+        public void Back()
+        {
+
+        }
+
+        #endregion
+
+        #region Local Methods
+
+        void LoadComboBoxes()
+        {
+            if (cbPrevActivity.Items.Count.Equals(0))
+            {
+                ds_genDataSet ds_gen = Proxy.System.Get_Gen("TRUE", "PA");
+                ds_genDataSet.TT_GENRow gen = ds_gen.TT_GEN.NewTT_GENRow();
+                gen.code = "-1"; gen.descrip = "[Please Select]";
+                ds_gen.TT_GEN.Rows.InsertAt(gen, 0);
+                cbPrevActivity.DataSource = ds_gen.TT_GEN;
+            }
+
+            if (cbUniversity.Items.Count.Equals(0))
+            {
+                DS_UNIVDataSet ds_univ = Proxy.Admissions.Get_Universities();
+                cbUniversity.DataSource = ds_univ.TT_UNIV;
+                cbUniversity.SelectedIndex = -1;
+            }
+        }
+
+        void LoadStudentDetails()
+        {
+            if (WizardEnvironment.State.ContainsKey(AdmissionStateItems.AdmissionStudent) && WizardEnvironment.State[AdmissionStateItems.AdmissionStudent] != null)
+            {
+                ds_adm_stu = (DS_ADM_STUDataSet)WizardEnvironment.State[AdmissionStateItems.AdmissionStudent];
+            }
+            else
+            {
+                ds_adm_stu = new DS_ADM_STUDataSet();
+            }
+            bsAdmStudent.DataSource = ds_adm_stu.TT_ADM_STU;
+
+            if (ds_adm_stu.TT_PREVSCHOOL.Rows.Count.Equals(0))
+            {
+                DS_ADM_STUDataSet.TT_PREVSCHOOLRow prevSchool = ds_adm_stu.TT_PREVSCHOOL.NewTT_PREVSCHOOLRow();
+                prevSchool.STUNO = ds_adm_stu.TT_ADM[0].STUNO;
+                ds_adm_stu.TT_PREVSCHOOL.AddTT_PREVSCHOOLRow(prevSchool);
+            }
+            bsPrevSchool.DataSource = ds_adm_stu.TT_PREVSCHOOL;
+
+            if (ds_schools == null) ds_schools = Proxy.Admissions.Get_Schools();
+
+            if (ds_adm_stu.TT_ADM_STU.Rows.Count > 0 && !ds_adm_stu.TT_ADM_STU[0].IsSCHOOLNull() && !string.IsNullOrEmpty(ds_adm_stu.TT_ADM_STU[0].SCHOOL))
+            {
+                // for Gadra students university selection 
+                if (ds_adm_stu.TT_ADM_STU[0].PREV_PSE.Equals("0"))
+                {
+                    if (ds_adm_stu.TT_ADM_STU[0].MATYR.Equals(DateTime.Today.Year) || Global.Global.IsGadra)
+                        ds_adm_stu.TT_ADM_STU[0].PREV_PSE = "999";
+                        cbUniversity.SelectedIndex = 0;
+                }
+
+                if (!string.IsNullOrEmpty(txtHighSchoolName1.Text.Trim())) return;
+
+                int index = new BindingSource(ds_schools, "TT_SCHOOL").Find("SCHOOL", ds_adm_stu.TT_ADM_STU[0].SCHOOL);
+                if (index >= 0 && ds_schools.TT_SCHOOL.Rows.Count > 0)
+                {
+                    ds_adm_stu.TT_PREVSCHOOL[0].HIGH_SCHO1 = ds_schools.TT_SCHOOL[index].SCH_NAME;
+                    if (ds_adm_stu.TT_ADM.Rows.Count > 0) ds_adm_stu.TT_PREVSCHOOL[0].HIGH_YRS1 = ds_adm_stu.TT_ADM[0].YRS_SCHO;
+
+                    bsPrevSchool.ResetBindings(false);
+                }
+            }
+
+            if (ds_adm_stu.TT_ADM_STU[0].IsPREV_ACTIVNull() || string.IsNullOrEmpty(ds_adm_stu.TT_ADM_STU[0].PREV_ACTIV))
+            {
+                if (ds_adm_stu.TT_ADM_STU[0].MATYR.Equals(DateTime.Today.Year)) ds_adm_stu.TT_ADM_STU[0].PREV_ACTIV = "11"; //default to 'Pupil at School'
+                else ds_adm_stu.TT_ADM_STU[0].PREV_ACTIV = "19"; //default to 'Other'
+
+                //if(ds_adm_stu.TT_ADM_STU[0].PREV_PSE.Equals(0))
+
+                bsAdmStudent.ResetBindings(false);
+            }
+
+        }
+
+        bool IsValidShoolHistoryDetails()
+        {
+            errorProvider.Clear();
+            bool valid = true;
+
+            if (cbPrevActivity.SelectedValue == null || cbPrevActivity.SelectedValue.ToString().Equals("-1"))
+            {
+                valid = false;
+                errorProvider.SetError(cbPrevActivity, "Please select previous activity from the list.");
+            }
+
+            if (cbUniversity.SelectedValue == null && !cbUniversity.Text.Trim().Equals(string.Empty))
+            {
+                valid = false;
+                errorProvider.SetError(cbUniversity, "Invalid University.");
+            }
+
+            return valid;
+        }
+
+        #endregion
+
+        #region ComboBox Events
+
+        private void cbPrevActivity_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            errorProvider.SetError(cbPrevActivity, string.Empty);
+        }
+
+        void cbUniversity_Leave(object sender, System.EventArgs e)
+        {
+            errorProvider.SetError(cbUniversity, string.Empty);
+        }
+
+        #endregion
+
+        #region TextBox Events
+
+        void txtPrimSchoolYrs_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        {
+            if (e.KeyCode.Equals(Keys.Control) || char.IsNumber((char)e.KeyCode)) e.Handled = true;
+        }
+
+        void txtHighSchoolYrs1_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        {
+            if (e.KeyCode.Equals(Keys.Control) || char.IsNumber((char)e.KeyCode)) e.Handled = true;
+        }
+
+        void txtHighSchoolYrs2_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        {
+            if (e.KeyCode.Equals(Keys.Control) || char.IsNumber((char)e.KeyCode)) e.Handled = true;
+        }
+
+        void txtHighSchoolYrs3_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)
+        {
+            if (e.KeyCode.Equals(Keys.Control) || char.IsNumber((char)e.KeyCode)) e.Handled = true;
+        }
+
+        #endregion
+    }
+}

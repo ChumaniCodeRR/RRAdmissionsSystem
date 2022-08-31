@@ -1,0 +1,305 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using RhodesWizard;
+using Utilities;
+using NS_System.StrongTypesNS;
+using Admissions.Utilities;
+using NS_Admissions.StrongTypesNS;
+
+namespace Admissions.AdmissionForms
+{
+    public partial class AdditionalInfo : UserControl, IWizard
+    {
+        DS_ADM_STUDataSet ds_adm_stu;
+
+        #region Constructors
+
+        public AdditionalInfo()
+        {
+            InitializeComponent();
+            dgvAdults.AutoGenerateColumns = false;
+        }
+
+        public AdditionalInfo(bool attention)
+            : this()
+        {
+            if (!attention)
+            {
+                gbFormDetails.Visible = false;
+
+                if (!Global.Global.admissions_view)
+                {
+                    //gbComputerSkills.Visible = false;
+                    //gbAdults.Location = gbComputerSkills.Location;
+                }
+            }
+            else
+            {
+                lblTitle.Text = "Application Form Details";
+                
+                //gbAdults.Visible = gbComputerSkills.Visible = false;
+                //gbFormDetails.Location = gbComputerSkills.Location;
+                //gbAdults.Visible = false;
+                //gbFormDetails.Location = gbAdults.Location;
+            }
+        }
+
+        #endregion
+
+        #region IWizard Members
+
+        public bool ShowView()
+        {
+            try
+            {
+                if (WizardEnvironment.State.ContainsKey(AdmissionStateItems.CurrentStudent))
+                {
+                    bool currentstudent = (bool)WizardEnvironment.State[AdmissionStateItems.CurrentStudent];
+                    if (currentstudent) return false;
+                }
+
+                if (WizardEnvironment.State.ContainsKey(AdmissionStateItems.AppDeclined))
+                {
+                    bool declined = (bool)WizardEnvironment.State[AdmissionStateItems.AppDeclined];
+                    if (declined) return false;
+                }
+
+                PopulateComboBoxes();
+                SetAdultNonEditState();
+                LoadStudentDetails();
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.HonoursSys, ex);
+            }
+            return true;
+        }
+
+        public bool Next()
+        {
+            try
+            {
+                string temperror = Proxy.Admissions.Save_Student_Additional_Info(ref ds_adm_stu, Global.Global.admissions_view);
+                if (!string.IsNullOrEmpty(temperror))
+                {
+                    MessageBox.Show(temperror, "Admissions", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+                WizardEnvironment.State[AdmissionStateItems.AdmissionStudent] = ds_adm_stu;
+                WizardEnvironment.State[AdmissionStateItems.ShowAttention] = ckAttentionDetails.Checked;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.HonoursSys, ex);
+                return false;
+            }
+        }
+
+        public void Back()
+        {
+            
+        }
+
+        #endregion
+
+        #region Local Methods
+
+        void PopulateComboBoxes()
+        {
+            if (cbRelationship.Items.Count.Equals(0))
+            {
+                ds_genDataSet ds_gen = Proxy.System.Get_Gen("TRUE", "AL");
+                ds_genDataSet.TT_GENRow gen = ds_gen.TT_GEN.NewTT_GENRow();
+                gen.code = "-1"; gen.descrip = "[Please Select]";
+                ds_gen.TT_GEN.Rows.InsertAt(gen, 0);
+                cbRelationship.DataSource = ds_gen.TT_GEN;
+            }
+
+            if (cbEducation.Items.Count.Equals(0))
+            {
+                ds_genDataSet ds_gen = Proxy.System.Get_Gen("TRUE", "ED");
+                ds_genDataSet.TT_GENRow gen = ds_gen.TT_GEN.NewTT_GENRow();
+                gen.code = "-1"; gen.descrip = "[Please Select]";
+                ds_gen.TT_GEN.Rows.InsertAt(gen, 0);
+                cbEducation.DataSource = ds_gen.TT_GEN;
+
+                DataGridViewComboBoxColumn educationColumn = (DataGridViewComboBoxColumn)dgvAdults.Columns[cEducation.Name];
+                educationColumn.DisplayMember = "descrip";
+                educationColumn.ValueMember = "code";
+                educationColumn.DataSource = ds_gen.TT_GEN;
+            }
+        }
+
+        void SetAdultNonEditState()
+        {
+            scAdults.Panel2Collapsed = true;
+            scAdults.Panel1.Enabled = true;
+
+            if (cbRelationship.Items.Count > 0) cbRelationship.SelectedIndex = 0;
+            txtOccupation.Text = string.Empty;
+            if (cbEducation.Items.Count > 0) cbEducation.SelectedIndex = 0;
+        }
+
+        void SetAdultEditState()
+        {
+            scAdults.Panel2Collapsed = false;
+            scAdults.Panel1.Enabled = false;
+        }
+
+        void LoadStudentDetails()
+        {
+            if (WizardEnvironment.State.ContainsKey(AdmissionStateItems.AdmissionStudent) && WizardEnvironment.State[AdmissionStateItems.AdmissionStudent] != null)
+            {
+                ds_adm_stu = (DS_ADM_STUDataSet)WizardEnvironment.State[AdmissionStateItems.AdmissionStudent];
+            }
+            else
+            {
+                ds_adm_stu = new DS_ADM_STUDataSet();
+            }
+            bsAdmissions.DataSource = ds_adm_stu.TT_ADM;
+            bsAdmStudent.DataSource = ds_adm_stu.TT_ADM_STU;
+            dgvAdults.DataSource = ds_adm_stu.TT_LIVINGWITH;
+        }
+
+        bool ValidRelationshipDetails()
+        {
+            bool valid = true;
+
+            if (cbRelationship.SelectedIndex < 1)
+            {
+                valid = false;
+                errorProvider1.SetError(cbRelationship, "You have to select relationship from the list");
+            }
+
+            if (txtOccupation.Text.Trim().Equals(string.Empty))
+            {
+                valid = false;
+                errorProvider1.SetError(txtOccupation, "You have to enter occupation");
+            }
+
+            if (cbEducation.SelectedIndex < 1)
+            {
+                valid = false;
+                errorProvider1.SetError(cbEducation, "You have to select education level from the list");
+            }
+
+            return valid;
+        }
+
+        #endregion
+
+        #region Button Events
+
+        private void btnNew_Click(object sender, EventArgs e)
+        {
+            SetAdultEditState();
+        }
+
+        private void btnDelete_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string msg = string.Empty;
+                if (dgvAdults.SelectedRows.Count.Equals(0))
+                {
+                    msg = "There is no selected item to remove";
+                    MessageBox.Show(msg, "Admissions", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                msg = "Are you sure you want to delete the selected item?";
+                if (!MessageBox.Show(msg, "Admissions", MessageBoxButtons.YesNo, MessageBoxIcon.Warning).Equals(DialogResult.Yes)) return;
+
+                DS_ADM_STUDataSet.TT_LIVINGWITHRow item;
+                for (int i = 0; i < ds_adm_stu.TT_LIVINGWITH.Rows.Count; i++)
+                {
+                    item = ds_adm_stu.TT_LIVINGWITH[i];
+
+                    if (item.RELATION.Equals(dgvAdults.SelectedRows[0].Cells[cRelationship.Name].Value.ToString()) &&
+                        item.OCC_REL.Equals(dgvAdults.SelectedRows[0].Cells[cOccupation.Name].Value.ToString()) &&
+                        item.EDU_REL.Equals(dgvAdults.SelectedRows[0].Cells[cEducation.Name].Value.ToString()))
+                    {
+                        ds_adm_stu.TT_LIVINGWITH.RemoveTT_LIVINGWITHRow(item); i--;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+        }
+
+        private void btnAdd_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (!ValidRelationshipDetails()) return;
+
+                DS_ADM_STUDataSet.TT_LIVINGWITHRow livingWith = ds_adm_stu.TT_LIVINGWITH.NewTT_LIVINGWITHRow();
+                livingWith.RELATION = cbRelationship.Text.ToUpper();
+                livingWith.OCC_REL = txtOccupation.Text.Trim();
+                livingWith.EDU_REL = cbEducation.SelectedValue.ToString();
+                ds_adm_stu.TT_LIVINGWITH.AddTT_LIVINGWITHRow(livingWith);
+
+                SetAdultNonEditState();
+            }
+            catch (Exception ex)
+            {
+                Utils.HandleException(ExceptionSource.Admissions, ex);
+            }
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            SetAdultNonEditState();
+        }
+
+        #endregion
+
+        #region DataGridView Events
+
+        void dgvAdults_CellDoubleClick(object sender, System.Windows.Forms.DataGridViewCellEventArgs e)
+        {
+            //TODO: Update relationship
+        }
+
+        void dgvAdults_DataBindingComplete(object sender, System.Windows.Forms.DataGridViewBindingCompleteEventArgs e)
+        {
+            dgvAdults.ClearSelection();
+        }
+
+        #endregion
+
+        #region TextBox Events
+
+        private void txtOccupation_TextChanged(object sender, EventArgs e)
+        {
+            errorProvider1.SetError(txtOccupation, string.Empty);
+        }
+
+        void txtOccupation_GotFocus(object sender, System.EventArgs e)
+        {
+            txtOccupation.SelectAll();
+        }
+
+        #endregion
+
+        private void AdditionalInfo_Load(object sender, EventArgs e)
+        {
+           if (Global.Global.ref_no != string.Empty) ckSignedApp.Checked = true;
+        }
+
+        private void btnViewDocument_Click(object sender, EventArgs e)
+        {
+            Admissions.AdmissionForms.OnlineApps.ViewDelDoc frmViewDelDoc = new Admissions.AdmissionForms.OnlineApps.ViewDelDoc();
+            frmViewDelDoc.ShowDialog();
+        }
+    }
+}
